@@ -1,1 +1,4 @@
 node_modules
+runserver.sh
+build-exe.sh
+docker-compose.yml
