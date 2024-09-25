@@ -1,8 +1,26 @@
 DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t ee5610110106/crok:version_id .
 
+docker push ee5610110106/crok:version_id
+
 docker run -d \
     --restart always \
     --name crok \
     --net host \
     --env-file .env \
     ee5610110106/crok:release_25092024 --port 9003 --secure true
+
+docker run -d \
+    --restart always \
+    --name crok \
+    --net host \
+    --env-file .env \
+    ee5610110106/crok:mac_25092024 --port 9003 --secure true
+
+
+DOCKER_BUILDKIT=1 docker build -t ee5610110106/crok:mac_test_env .
+docker run -d \
+    --restart always \
+    --name crok \
+    --net host \
+    --env-file .env \
+    ee5610110106/crok:v1_docker_compose

@@ -1,0 +1,13 @@
+services:
+  crok_server:
+    container_name: crok_server
+    # image: ee5610110106/crok:release_25092024
+    # image: ee5610110106/crok:mac_test_env
+    image: ee5610110106/crok:v1_docker_compose
+    environment:
+      - DEBUG=localtunnel*
+      - SECURE=true
+      - PORT=${PORT}
+    restart: always
+    ports:
+      - "9003:${PORT}"
