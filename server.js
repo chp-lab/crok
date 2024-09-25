@@ -5,17 +5,21 @@ import Debug from 'debug';
 import http from 'http';
 import { hri } from 'human-readable-ids';
 import Router from 'koa-router';
-
+const cors = require('@koa/cors');
 import ClientManager from './lib/ClientManager';
+import fs from 'fs';
+import path from 'path';
 
 const debug = Debug('localtunnel:server');
 
-export default function(opt) {
+export default function (opt) {
     opt = opt || {};
+
 
     const validHosts = (opt.domain) ? [opt.domain] : undefined;
     const myTldjs = tldjs.fromUserSettings({ validHosts });
-    const landingPage = opt.landing || 'https://localtunnel.github.io/www/';
+    // const landingPage = opt.landing || 'https://localtunnel.github.io/www/';
+    const landingPage = opt.landing || 'https://src.n-ix.com/uploads/2023/07/19/3f30c411-699e-48e9-9939-5bf6f2d00239.svg';
 
     function GetClientIdFromHostname(hostname) {
         return myTldjs.getSubdomain(hostname);
@@ -28,14 +32,48 @@ export default function(opt) {
     const app = new Koa();
     const router = new Router();
 
+
     router.get('/api/status', async (ctx, next) => {
         const stats = manager.stats;
         ctx.body = {
             tunnels: stats.tunnels,
-            mem: process.memoryUsage(),
+            mem: process.memoryUsage()
         };
     });
 
+    // --------------------------------------------------------------------------------------------
+    router.get('/api/v1/get_client', async (ctx, next) => {
+        const getClient = await manager.getClientRegis();
+        ctx.body = {
+            client: getClient
+        };
+    });
+
+    router.delete('/api/v1/del_client/:client', async (ctx, next) => {
+        const clientId = ctx.params.client
+        manager.removeClient(clientId);
+        console.log(clientId);
+
+        ctx.body = {
+            msg: 'ok',
+            data: clientId
+        };
+    });
+
+    router.get('/dashboard', async (ctx, next) => {
+        try {
+            const filePath = path.join(__dirname, 'views', 'dashboard.html');
+            const html = await fs.promises.readFile(filePath, 'utf-8'); // อ่านไฟล์ HTML
+
+            ctx.type = 'html'; // กำหนด type เป็น HTML
+            ctx.body = html;   // ส่งไฟล์ HTML ไปยัง body
+        } catch (err) {
+            ctx.status = 500;
+            ctx.body = 'Error loading the page';
+        }
+    })
+
+    // --------------------------------------------------------------------------------------------
     router.get('/api/tunnels/:id/status', async (ctx, next) => {
         const clientId = ctx.params.id;
         const client = manager.getClient(clientId);
@@ -50,10 +88,12 @@ export default function(opt) {
         };
     });
 
+    app.use(cors());
     app.use(router.routes());
     app.use(router.allowedMethods());
 
     // root endpoint
+    // สำหรับ server random subdomain มา
     app.use(async (ctx, next) => {
         const path = ctx.request.path;
 
@@ -66,12 +106,15 @@ export default function(opt) {
         const isNewClientRequest = ctx.query['new'] !== undefined;
         if (isNewClientRequest) {
             const reqId = hri.random();
-            debug('making new client with id %s', reqId);
+            console.log("-- สำหรับ server random subdomain มา --")
+            debug('making new client with id "%s"', reqId);
             const info = await manager.newClient(reqId);
 
             const url = schema + '://' + info.id + '.' + ctx.request.host;
             info.url = url;
             ctx.body = info;
+            console.log(info)
+            manager.setClientRegis(info)
             return;
         }
 
@@ -81,6 +124,8 @@ export default function(opt) {
 
     // anything after the / path is a request for a specific client name
     // This is a backwards compat feature
+    // สำหรับ client set subdomain มา
+    // อะไรก็ตามหลังเส้นทาง / คือ subdomain
     app.use(async (ctx, next) => {
         const parts = ctx.request.path.split('/');
 
@@ -101,15 +146,29 @@ export default function(opt) {
             ctx.body = {
                 message: msg,
             };
+            // console.log(msg);
             return;
         }
 
-        debug('making new client with id %s', reqId);
+        console.log("-- สำหรับ client set subdomain มา --")
+        debug('making new client with id "%s"', reqId);
         const info = await manager.newClient(reqId);
-
+        if (info.id == 'already exist') {
+            ctx.status = 403;
+            ctx.body = {
+                message: info.id,
+                id: reqId,
+            };
+            console.log(reqId, ' ', info.id);
+            return;
+        }
         const url = schema + '://' + info.id + '.' + ctx.request.host;
         info.url = url;
         ctx.body = info;
+        console.log("-- url ที่ส่งไปยัง client ใช้งาน ", url);
+        // clients_url = clients_url.filter(client => client.id !== info.id);
+        // clients_url.push(info);
+        manager.setClientRegis(info)
         return;
     });
 
