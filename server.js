@@ -2,14 +2,16 @@ import log from 'book';
 import Koa from 'koa';
 import tldjs from 'tldjs';
 import Debug from 'debug';
-import http from 'http';
+import http, { request } from 'http';
 import { hri } from 'human-readable-ids';
 import Router from 'koa-router';
 const cors = require('@koa/cors');
+const bodyParser = require('koa-bodyparser');
+import serve from 'koa-static';
 import ClientManager from './lib/ClientManager';
 import fs from 'fs';
 import path from 'path';
-
+// const dotenv = require('dotenv').config();
 const debug = Debug('localtunnel:server');
 
 export default function (opt) {
@@ -31,6 +33,12 @@ export default function (opt) {
 
     const app = new Koa();
     const router = new Router();
+
+    app.use(bodyParser())
+    app.use(cors());
+    app.use(router.routes());
+    app.use(router.allowedMethods());
+    app.use(serve(path.join(__dirname, 'public')));
 
 
     router.get('/api/status', async (ctx, next) => {
@@ -73,6 +81,32 @@ export default function (opt) {
         }
     })
 
+    router.get('/dashboard/login', async (ctx, next) => {
+        try {
+            const filePath = path.join(__dirname, 'views', 'login.html');
+            const html = await fs.promises.readFile(filePath, 'utf-8'); // อ่านไฟล์ HTML
+
+            ctx.type = 'html'; // กำหนด type เป็น HTML
+            ctx.body = html;   // ส่งไฟล์ HTML ไปยัง body
+        } catch (err) {
+            ctx.status = 500;
+            ctx.body = 'Error loading the page';
+        }
+    })
+
+    router.post('/login', async (ctx, next) => {
+        const args = ctx.request.body || {}
+        console.log(args);
+
+
+        const { username, password } = args;
+        if (username == process.env.USER_NAME && password == process.env.PASS_WORD) {
+            ctx.body = { success: true, user: process.env.USER_NAME };
+        } else {
+            ctx.body = { success: false, user: '' };
+        }
+    })
+
     // --------------------------------------------------------------------------------------------
     router.get('/api/tunnels/:id/status', async (ctx, next) => {
         const clientId = ctx.params.id;
@@ -87,10 +121,6 @@ export default function (opt) {
             connected_sockets: stats.connectedSockets,
         };
     });
-
-    app.use(cors());
-    app.use(router.routes());
-    app.use(router.allowedMethods());
 
     // root endpoint
     // สำหรับ server random subdomain มา
@@ -128,6 +158,10 @@ export default function (opt) {
     // อะไรก็ตามหลังเส้นทาง / คือ subdomain
     app.use(async (ctx, next) => {
         const parts = ctx.request.path.split('/');
+        if (parts[1].includes('dashboard')) {
+            await next();
+            return
+        }
 
         // any request with several layers of paths is not allowed
         // rejects /foo/bar
@@ -136,7 +170,6 @@ export default function (opt) {
             await next();
             return;
         }
-
         const reqId = parts[1];
 
         // limit requested hostnames to 63 characters
@@ -170,6 +203,22 @@ export default function (opt) {
         // clients_url.push(info);
         manager.setClientRegis(info)
         return;
+    });
+
+    app.use(async (ctx, next) => {
+        await next(); // เรียกใช้งาน Middleware ถัดไป
+        if (ctx.status === 404) {
+            try {
+                const filePath = path.join(__dirname, 'views', '404.html'); // กำหนดที่อยู่ของไฟล์ 404
+                const html = await fs.promises.readFile(filePath, 'utf-8'); // อ่านไฟล์ HTML
+    
+                ctx.type = 'html'; // กำหนด type เป็น HTML
+                ctx.body = html;   // ส่งไฟล์ HTML ไปยัง body
+            } catch (err) {
+                ctx.status = 500;
+                ctx.body = 'Error loading the 404 page';
+            }
+        }
     });
 
     const server = http.createServer();
