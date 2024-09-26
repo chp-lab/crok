@@ -2,3 +2,4 @@ node_modules
 runserver.sh
 build-exe.sh
 docker-compose.yml
+build_image.sh

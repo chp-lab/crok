@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พื้นหลังรูปเต็มจอ</title>
+    <style>
+        img {
+            /* pointer-events: none; */
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+        body {
+            user-select: none; /* ปิดการเลือกข้อความและรูปภาพ */
+            margin: 0; /* กำจัด margin */
+            height: 100vh; /* กำหนดความสูงเต็มจอ */
+            overflow: hidden; /* ปิดการเลื่อน */
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: flex; justify-content: center; align-items: center; height: 95vh;">
+        <img src="/images/404.jpg" alt="Description" oncontextmenu="return false;" ondragstart="return false;"
+            onmousedown="return false;">
+    </div>
+
+</body>
+
+</html>
