@@ -18,6 +18,7 @@ docker run -d \
 
 
 DOCKER_BUILDKIT=1 docker build -t ee5610110106/crok:mac_test_env .
+
 docker run -d \
     --restart always \
     --name crok \
