@@ -20,7 +20,10 @@
     "koa-static": "5.0.0",
     "localenv": "0.2.2",
     "optimist": "0.6.1",
+    "pg": "8.13.0",
+    "pg-hstore": "2.3.4",
     "pump": "3.0.0",
+    "sequelize": "6.37.3",
     "tldjs": "2.3.1"
   },
   "devDependencies": {
