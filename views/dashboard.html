@@ -40,6 +40,7 @@
         <!-- ตารางข้อมูล -->
         <div class="container">
             <div class="row">
+                <h4>All User</h4>
                 <table class="table table-bordered border-primary">
                     <thead>
                         <tr class="text-center">
@@ -50,6 +51,7 @@
                             <th scope="col">subdomain</th>
                             <th scope="col">tcp port</th>
                             <th scope="col">url</th>
+                            <th scope="col">user</th>
                             <!-- <th scope="col">connect socket (max 10)</th> -->
                             <th scope="col">createtime</th>
                             <th scope="col">action</th>
@@ -58,13 +60,14 @@
                     <tbody>
                         <tr v-for="(user, index) in data_client" :key="index" class="text-center">
                             <th scope="row">{{ index + 1 }}</th>
-                            <td>{{ user.id }}</td>
-                            <td>{{ user.port }}</td>
+                            <td>{{ user.subdomain }}</td>
+                            <td>{{ user.tcp_port }}</td>
                             <td><a :href="user.url" target="_blank" rel="noopener noreferrer">{{ user.url }}</a></td>
+                            <td>{{ user.email }}</td>
                             <!-- <td>{{ con_sock(user.id) }}</td> -->
-                            <td>{{ user.create_time }}</td>
+                            <td>{{ user.createdAt }}</td>
                             <td><button type="button" class="btn btn-sm btn-warning"
-                                    @click="removeClient(user.id)">ลบ</button></td>
+                                    @click="removeClient(user.subdomain)">ลบ</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -92,7 +95,7 @@
             getClient() {
                 axios.get('/api/v1/get_client')
                     .then((response) => {
-                        this.data_client = response.data.client;
+                        this.data_client = response.data.all_client;
                     })
                     .catch(function (error) {
                         console.log(error);
