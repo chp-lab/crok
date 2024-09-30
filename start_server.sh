@@ -1,3 +1,3 @@
 #!/bin/bash
-source .env
+# source .env
 node -r esm ./bin/server --port $PORT --secure true
