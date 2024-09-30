@@ -122,6 +122,7 @@ class ApiManagement {
     client_connect(schema) {
         this.router.post('/connect_client', async (ctx, next) => {
             const args = ctx.request.body || {}
+            console.log('req:')
             console.log(args);
             if (args.sub_domain !== '?new') {
                 const reqId = args.sub_domain;
@@ -155,7 +156,8 @@ class ApiManagement {
                 console.log("-- url ที่ส่งไปยัง client ใช้งาน ", url);
                 // clients_url = clients_url.filter(client => client.id !== info.id);
                 // clients_url.push(info);
-                // console.log(info);
+                console.log('res:')
+                console.log(info);
                 await createUser(info)
                 
                 // this.manager.setClientRegis(info)
@@ -173,6 +175,7 @@ class ApiManagement {
                 info.url = url;
                 info.user = args.user
                 ctx.body = info;
+                console.log('res:')
                 console.log(info)
                 await createUser(info)
                 // this.manager.setClientRegis(info)

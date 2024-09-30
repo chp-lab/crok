@@ -21,8 +21,8 @@ async function getUserLink() {
 
 
 async function createUser(args) {
-    console.log("args");
-    console.log(args);
+    // console.log("args");
+    // console.log(args);
     const usercheck = await User.findOne({
         where: {
             email: args.user.email
