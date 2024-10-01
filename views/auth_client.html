@@ -17,7 +17,7 @@
         <!-- เพิ่ม Navbar -->
         <nav class="navbar navbar-expand-lg bg-primary mb-4" data-bs-theme="dark">
             <div class="container-fluid">
-                <a class="navbar-brand text-danger">Tunnel Giant</a>
+                <label class="navbar-brand text-danger">Tunnel Giant</label>
                 <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
                     aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -29,7 +29,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="/auth_client">Your Authtoken Client</a>
-                          </li>
+                        </li>
                     </ul>
                     <span class="navbar-text">
                         <span class="navbar-text">User: {{ username }}</span>
@@ -44,7 +44,7 @@
         <!-- ตารางข้อมูล -->
         <div class="container">
             <div class="row">
-                <h4>All User</h4>
+                <h4>Auth Token Client</h4>
                 <table class="table table-bordered border-primary">
                     <thead>
                         <tr class="text-center">
@@ -52,24 +52,17 @@
                         </tr>
                         <tr class="text-center">
                             <th scope="col">no</th>
-                            <th scope="col">subdomain</th>
-                            <th scope="col">tcp port</th>
-                            <th scope="col">url</th>
-                            <th scope="col">user</th>
-                            <!-- <th scope="col">connect socket (max 10)</th> -->
-                            <th scope="col">createtime</th>
-                            <th scope="col">action</th>
+                            <th scope="col">email</th>
+                            <th scope="col">auth token</th>
+                            <!-- <th scope="col">action</th> -->
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(user, index) in data_client" :key="index" class="text-center">
                             <th scope="row">{{ index + 1 }}</th>
-                            <td>{{ user.subdomain }}</td>
-                            <td>{{ user.tcp_port }}</td>
-                            <td><a :href="user.url" target="_blank" rel="noopener noreferrer">{{ user.url }}</a></td>
                             <td>{{ user.email }}</td>
                             <!-- <td>{{ con_sock(user.id) }}</td> -->
-                            <td>{{ user.createdAt }}</td>
+                            <td>{{ user.userKey }}</td>
                             <!-- <td><button type="button" class="btn btn-sm btn-warning"
                                     @click="removeClient(user.subdomain)">ลบ</button></td> -->
                         </tr>
@@ -89,7 +82,7 @@
     const app = Vue.createApp({
         data() {
             return {
-                tunnel: "Tunnel Dashboard",
+                tunnel: "Tunnel Auth Token",
                 data_client: [],
                 connected_socket: {},
                 username: '' // เก็บชื่อผู้ใช้ที่ล็อกอินเข้ามา
@@ -97,37 +90,37 @@
         },
         methods: {
             getClient() {
-                axios.get('/api/v1/get_client')
+                axios.get('/api/v1/get_client_all')
                     .then((response) => {
-                        this.data_client = response.data.all_client;
+                        this.data_client = response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
                     });
             },
-            removeClient(cl) {
-                if (confirm('Are you sure you want to delete this client '+cl+' ?')) {
-                    axios.delete('/api/v1/del_client/' + cl)
-                        .then((response) => {
-                            this.getClient();
-                        })
-                        .catch(function (error) {
-                            console.log(error);
-                        });
-                }
-            },
-            con_sock(cl) {
-                var consock = 0
-                axios.get('/api/tunnels/' + cl + '/status')
-                    .then((response) => {
-                        consock = response.data.connected_sockets;
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                        consock = 0
-                    });
-                return consock
-            },
+            // removeClient(cl) {
+            //     if (confirm('Are you sure you want to delete this client '+cl+' ?')) {
+            //         axios.delete('/api/v1/del_client/' + cl)
+            //             .then((response) => {
+            //                 this.getClient();
+            //             })
+            //             .catch(function (error) {
+            //                 console.log(error);
+            //             });
+            //     }
+            // },
+            // con_sock(cl) {
+            //     var consock = 0
+            //     axios.get('/api/tunnels/' + cl + '/status')
+            //         .then((response) => {
+            //             consock = response.data.connected_sockets;
+            //         })
+            //         .catch(function (error) {
+            //             console.log(error);
+            //             consock = 0
+            //         });
+            //     return consock
+            // },
             getCookie(name) {
                 let nameEQ = name + "=";
                 let ca = document.cookie.split(';');

@@ -18,6 +18,7 @@ const ApiManagement = require('./ApiManagement');
 import sequelize from "./src/db/database"
 import initModels from './src/model/MapModel';
 import { emptyTable } from "./src/controllers/UserController"
+import {randomAsciiString} from "./generalFunction"
 
 export default function (opt) {
     opt = opt || {};
@@ -75,7 +76,9 @@ export default function (opt) {
         // sequelize.sync({ force: true }).then(() => {
         //     console.log("Drop and re-sync db.");
         // });
-        emptyTable()
+        // emptyTable()
+        console.log("dddd ",randomAsciiString());
+        
     } catch (error) {
         console.error("Unable to connect to the database:", error);
     }
