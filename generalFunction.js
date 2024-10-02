@@ -56,4 +56,4 @@ export function randomAsciiString() {
   );
 }
 
-export default { timeNow };
+export default timeNow ;

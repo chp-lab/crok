@@ -1,12 +1,14 @@
 import fs from "fs";
 import path from "path";
 import Debug from "debug";
-const debug = Debug("localtunnel:server");
 import { checkAdmin } from "./src/controllers/AdminController";
+import { hri } from "human-readable-ids";
 import {
   getUserLink,
-  createUser,
+  addUserLink,
   getAllUser,
+  checkKey,
+  createUser,
 } from "./src/controllers/UserController";
 
 class ApiManagement {
@@ -14,6 +16,7 @@ class ApiManagement {
     this.router = router;
     this.manager = manager;
     this.api_v1 = "/api/v1";
+    this.debug = Debug("localtunnel:DebugApi");
   }
 
   dashboard() {
@@ -56,7 +59,7 @@ class ApiManagement {
       }
     });
 
-    this.router.get(this.api_v1 + "/get_client_all", async (ctx, next) => {
+    this.router.get(this.api_v1 + "/get_user_all", async (ctx, next) => {
       try {
         const clientAll = await getAllUser();
         ctx.body = clientAll;
@@ -68,7 +71,7 @@ class ApiManagement {
   }
 
   newApi() {
-    this.router.get(this.api_v1 + "/get_client", async (ctx, next) => {
+    this.router.get(this.api_v1 + "/get_client_tunnel", async (ctx, next) => {
       // const getClient = await this.manager.getClientRegis();
       const user_link = await getUserLink();
       // console.log(user_link);
@@ -97,7 +100,7 @@ class ApiManagement {
       async (ctx, next) => {
         const clientId = ctx.params.client;
         this.manager.removeClient(clientId);
-        console.log(clientId);
+        this.debug(clientId);
 
         ctx.body = {
           msg: "ok",
@@ -108,7 +111,7 @@ class ApiManagement {
 
     this.router.post(this.api_v1 + "/login", async (ctx, next) => {
       const args = ctx.request.body || {};
-      console.log(args);
+      this.debug(args);
       const { username, password } = args;
       const user_con = await checkAdmin(username, password);
 
@@ -121,6 +124,26 @@ class ApiManagement {
       } else {
         ctx.body = { success: false, user: "" };
       }
+    });
+
+    this.router.post(this.api_v1 + "/create_client", async (ctx, next) => {
+      const args = ctx.request.body || {};
+      const data = await createUser(args);
+      this.debug(args);
+      if (data.success) {
+        this.debug("createUser success");
+        ctx.body = { success: true, msg: data.msg };
+      } else {
+        this.debug(data.msg + " createUser fail");
+        ctx.body = { success: false, msg: data.msg };
+      }
+    });
+
+    this.router.post(this.api_v1 + "/get_key", async (ctx, next) => {
+      const args = ctx.request.body || {};
+      const data = await checkKey(args, "get_key");
+      this.debug(args);
+      ctx.body = { success: true, msg: data };
     });
   }
 
@@ -153,6 +176,16 @@ class ApiManagement {
       const args = ctx.request.body || {};
       console.log("req:");
       console.log(args);
+      const check_key = await checkKey(args.user, "check_key");
+      if (check_key == null) {
+        this.debug("client token key not found");
+        ctx.status = 200;
+        ctx.body = {
+          message: "Invalid or Missing Token",
+          result: false,
+        };
+        return;
+      }
       if (args.sub_domain !== "?new") {
         const reqId = args.sub_domain;
         // limit requested hostnames to 63 characters
@@ -169,28 +202,28 @@ class ApiManagement {
           return;
         }
 
-        console.log("-- สำหรับ client set subdomain มา --");
-        debug('making new client with id "%s"', reqId);
+        this.debug("-- สำหรับ client set subdomain มา --");
+        this.debug('making new client with id "%s"', reqId);
         const info = await this.manager.newClient(reqId);
         if (info.id == "already exist") {
           ctx.status = 200;
           ctx.body = {
             message: info.id,
+            result: false,
             id: reqId,
           };
-          console.log(reqId, " ", info.id);
+          this.debug(reqId, " ", info.id);
           return;
         }
         const url = schema + "://" + info.id + "." + ctx.request.host;
         info.url = url;
-        info.user = args.user;
         ctx.body = info;
-        console.log("-- url ที่ส่งไปยัง client ใช้งาน ", url);
+        this.debug("-- url ที่ส่งไปยัง client ใช้งาน ", url);
         // clients_url = clients_url.filter(client => client.id !== info.id);
         // clients_url.push(info);
         console.log("res:");
         console.log(info);
-        await createUser(info);
+        await addUserLink(info, check_key.id);
 
         // this.manager.setClientRegis(info)
         return;
@@ -198,18 +231,17 @@ class ApiManagement {
 
       if (args.sub_domain === "?new") {
         const reqId = hri.random();
-        console.log("-- สำหรับ server random subdomain มา --");
+        this.debug("-- สำหรับ server random subdomain มา --");
         debug('making new client with id "%s"', reqId);
         const info = await this.manager.newClient(reqId);
 
         const url = schema + "://" + info.id + "." + ctx.request.host;
         info.url = url;
-        info.user = args.user;
         ctx.body = info;
         console.log("res:");
         console.log(info);
-        await createUser(info);
         // this.manager.setClientRegis(info)
+        await addUserLink(info, check_key.id);
         return;
       }
       ctx.redirect(landingPage);
