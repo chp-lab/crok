@@ -10,6 +10,25 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="icon" type="image/png" sizes="16x16" href="https://cdn-icons-png.flaticon.com/512/8654/8654262.png" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+        .blinking-icon {
+            font-size: 20px;
+            animation: blink-animation 1s infinite;
+        }
+
+        @keyframes blink-animation {
+            0%, 100% {
+                color: green;
+            }
+            50% {
+                color: red;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -17,14 +36,15 @@
         <!-- เพิ่ม Navbar -->
         <nav class="navbar navbar-expand-lg bg-primary mb-4" data-bs-theme="dark">
             <div class="container-fluid">
-                <a class="navbar-brand text-danger">Tunnel Giant</a>
+                <img src="/images/logo1.png" alt="Logo" width="75" height="35" class="d-inline-block align-text-top me-2">
+                <!-- <a class="navbar-brand text-warning-emphasis">Tunnel Giant</a> -->
                 <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
                     aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button> -->
                 <div class="collapse navbar-collapse" id="navbarText">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
+                        <li class="nav-item bg-info-subtle">
                             <a class="nav-link active" aria-current="page" href="/dashboard">Tunnel Running</a>
                         </li>
                         <li class="nav-item">
@@ -48,10 +68,11 @@
                 <table class="table table-bordered border-primary">
                     <thead>
                         <tr class="text-center">
-                            <th colspan="7">{{tunnel}}</th>
+                            <th colspan="8">{{tunnel}}</th>
                         </tr>
                         <tr class="text-center">
                             <th scope="col">no</th>
+                            <th scope="col"></th>
                             <th scope="col">subdomain</th>
                             <th scope="col">tcp port</th>
                             <th scope="col">url</th>
@@ -64,6 +85,7 @@
                     <tbody>
                         <tr v-for="(user, index) in data_client" :key="index" class="text-center">
                             <th scope="row">{{ index + 1 }}</th>
+                            <th scope="row"><i class="bi bi-cpu blinking-icon"></i></th>    
                             <td>{{ user.subdomain }}</td>
                             <td>{{ user.tcp_port }}</td>
                             <td><a :href="user.url" target="_blank" rel="noopener noreferrer">{{ user.url }}</a></td>
