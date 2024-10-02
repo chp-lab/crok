@@ -70,8 +70,8 @@
                             <td>{{ user.email }}</td>
                             <!-- <td>{{ con_sock(user.id) }}</td> -->
                             <td>{{ user.createdAt }}</td>
-                            <!-- <td><button type="button" class="btn btn-sm btn-warning"
-                                    @click="removeClient(user.subdomain)">ลบ</button></td> -->
+                            <td><button type="button" class="btn btn-sm btn-warning"
+                                    @click="removeClient(user.subdomain)">ลบ</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -97,7 +97,7 @@
         },
         methods: {
             getClient() {
-                axios.get('/api/v1/get_client')
+                axios.get('/api/v1/get_client_tunnel')
                     .then((response) => {
                         this.data_client = response.data.all_client;
                     })

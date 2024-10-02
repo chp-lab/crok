@@ -1,6 +1,6 @@
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
-
+import { randomAsciiString } from "../../generalFunction.js";
 const { User, Linkuser } = initModels(sequelize);
 
 async function getUserLink() {
@@ -33,63 +33,101 @@ async function createUser(args) {
   // console.log(args);
   const usercheck = await User.findOne({
     where: {
-      email: args.user.email,
+      email: args.email,
     },
   });
   if (usercheck !== null) {
     console.log("user เดิม");
+    return { success: false, msg: "already" };
 
-    const linkusercheck = await Linkuser.findOne({
-      where: {
-        subdomain: args.id,
-      },
-    });
+    // const linkusercheck = await Linkuser.findOne({
+    //   where: {
+    //     subdomain: args.id,
+    //   },
+    // });
     // console.log(">>>> ", linkusercheck);
 
-    if (linkusercheck !== null) {
-      await Linkuser.update(
-        {
-          subdomain: args.id,
-          tcp_port: args.port,
-          url: args.url,
-          UserId: usercheck.id,
-        },
-        {
-          where: { id: linkusercheck.id },
-        }
-      );
-    } else {
-      const linkuser = await Linkuser.create({
-        subdomain: args.id,
-        tcp_port: args.port,
-        url: args.url,
-        UserId: usercheck.id,
-      });
-      if (!linkuser) {
-        console.log("create Linkuser fail");
-      }
-    }
+    // if (linkusercheck !== null) {
+    //   await Linkuser.update(
+    //     {
+    //       subdomain: args.id,
+    //       tcp_port: args.port,
+    //       url: args.url,
+    //       UserId: usercheck.id,
+    //     },
+    //     {
+    //       where: { id: linkusercheck.id },
+    //     }
+    //   );
+    // } else {
+    //   const linkuser = await Linkuser.create({
+    //     subdomain: args.id,
+    //     tcp_port: args.port,
+    //     url: args.url,
+    //     UserId: usercheck.id,
+    //   });
+    //   if (!linkuser) {
+    //     console.log("create Linkuser fail");
+    //   }
+    // }
   } else {
     console.log("user ใหม่");
     const user = await User.create({
-      email: args.user.email,
-      name: args.user.name,
-      userKey: args.user.userKey,
+      email: args.email,
+      name: args.name,
+      userKey: randomAsciiString(),
     });
     if (!user) {
       console.log("create User fail");
     }
-    console.log(user.id);
+    console.log(user.userKey);
+    return { success: true, msg: user.userKey };
+    // const linkuser = await Linkuser.create({
+    //   subdomain: args.id,
+    //   tcp_port: args.port,
+    //   url: args.url,
+    //   UserId: user.id,
+    // });
+    // if (!linkuser) {
+    //   console.log("create Linkuser fail");
+    // }
+  }
+}
+
+async function addUserLink(args, user_id) {
+  try {
     const linkuser = await Linkuser.create({
       subdomain: args.id,
       tcp_port: args.port,
       url: args.url,
-      UserId: user.id,
+      UserId: user_id,
     });
     if (!linkuser) {
       console.log("create Linkuser fail");
     }
-  }
+  } catch (error) {}
+}
+
+async function checkKey(args, mode) {
+  try {
+    if (mode == "check_key") {
+      const userkeycheck = await User.findOne({
+        where: {
+          userKey: args.userKey,
+        },
+      });
+      return userkeycheck;
+    }
+
+    if (mode == "get_key") {
+      const userkeycheck = await User.findOne({
+        where: {
+          email: args.email,
+        },
+      });
+      return userkeycheck;
+    }
+  } catch (error) {}
 }
 
 export async function deleteLinkUser(args) {
@@ -114,4 +152,10 @@ export function emptyTable() {
     force: true, // ถ้าคุณเปิดใช้ soft delete (paranoid), force จะทำการลบจริง ๆ
   });
 }
-module.exports = { getUserLink, createUser, getAllUser };
+module.exports = {
+  getUserLink,
+  createUser,
+  getAllUser,
+  checkKey,
+  addUserLink,
+};

@@ -3,7 +3,7 @@ import Koa from 'koa';
 import tldjs from 'tldjs';
 // import Debug from 'debug';
 import http, { request } from 'http';
-import { hri } from 'human-readable-ids';
+// import { hri } from 'human-readable-ids';
 import Router from 'koa-router';
 const cors = require('@koa/cors');
 const bodyParser = require('koa-bodyparser');
@@ -18,7 +18,6 @@ const ApiManagement = require('./ApiManagement');
 import sequelize from "./src/db/database"
 import initModels from './src/model/MapModel';
 import { emptyTable } from "./src/controllers/UserController"
-import {randomAsciiString} from "./generalFunction"
 
 export default function (opt) {
     opt = opt || {};
@@ -77,7 +76,6 @@ export default function (opt) {
         //     console.log("Drop and re-sync db.");
         // });
         // emptyTable()
-        console.log("dddd ",randomAsciiString());
         
     } catch (error) {
         console.error("Unable to connect to the database:", error);
