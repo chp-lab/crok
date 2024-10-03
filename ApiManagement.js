@@ -2,7 +2,9 @@ import fs from "fs";
 import path from "path";
 import Debug from "debug";
 import { checkAdmin } from "./src/controllers/AdminController";
+import { getToken, jwtRefreshTokenValidate, authMiddleware } from "./src/service/authen"
 import { hri } from "human-readable-ids";
+import ResponseManager from "./src/service/response"
 import {
   getUserLink,
   addUserLink,
@@ -19,6 +21,61 @@ class ApiManagement {
     this.debug = Debug("localtunnel:DebugApi");
   }
 
+  // api authentication
+  authentication() {
+    this.router.post(this.api_v1 + "/auth/login", async (ctx, next) => {
+      try {
+        const result = await getToken(ctx.request.body);
+        if (!result) {
+          new ResponseManager(ctx).error("Invalid email", 404)
+          return;
+        }
+
+        const { user, access_token, refresh_token } = result;
+        const data_body = {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+          access_token,
+          refresh_token,
+        };
+        new ResponseManager(ctx).success(data_body, "Login successfully")
+      } catch (error) {
+        console.error("Authentication error:", error.message);
+        new ResponseManager(ctx).error("An error occurred during authentication.", 500)
+      }
+    })
+
+    this.router.post(this.api_v1 + "/auth/refresh", jwtRefreshTokenValidate, async (ctx, next) => {
+      const body = ctx.state.user
+      try {
+        const result = await getToken(body);
+        if (!result) {
+          new ResponseManager(ctx).error("Invalid email", 404)
+          return;
+        }
+
+        const { user, access_token, refresh_token } = result;
+        const data_body = {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+          access_token,
+          refresh_token,
+        };
+        new ResponseManager(ctx).success(data_body, "Refresh successfully")
+      } catch (error) {
+        console.error("Authentication error:", error.message);
+        new ResponseManager(ctx).error("An error occurred during authentication.", 500)
+      }
+    })
+  }
+
+  // api admin dashboard
   dashboard() {
     this.router.get("/dashboard", async (ctx, next) => {
       try {
@@ -71,6 +128,7 @@ class ApiManagement {
   }
 
   newApi() {
+    // api admin
     this.router.get(this.api_v1 + "/get_client_tunnel", async (ctx, next) => {
       // const getClient = await this.manager.getClientRegis();
       const user_link = await getUserLink();
@@ -95,6 +153,7 @@ class ApiManagement {
       };
     });
 
+    // api admin
     this.router.delete(
       this.api_v1 + "/del_client/:client",
       async (ctx, next) => {
@@ -109,10 +168,14 @@ class ApiManagement {
       }
     );
 
+    // api admin
     this.router.post(this.api_v1 + "/login", async (ctx, next) => {
       const args = ctx.request.body || {};
       this.debug(args);
       const { username, password } = args;
+
+
+
       const user_con = await checkAdmin(username, password);
 
       // console.log("user:", user_con);
@@ -126,6 +189,7 @@ class ApiManagement {
       }
     });
 
+    // api create user (ใช้เส้น /auth/login แทน)
     this.router.post(this.api_v1 + "/create_client", async (ctx, next) => {
       const args = ctx.request.body || {};
       const data = await createUser(args);
@@ -139,14 +203,17 @@ class ApiManagement {
       }
     });
 
-    this.router.post(this.api_v1 + "/get_key", async (ctx, next) => {
+    // api admin
+    this.router.post(this.api_v1 + "/get_key", authMiddleware, async (ctx, next) => {
       const args = ctx.request.body || {};
       const data = await checkKey(args, "get_key");
       this.debug(args);
-      ctx.body = { success: true, msg: data };
+      new ResponseManager(ctx).success(data)
+      // ctx.body = { success: true, msg: data };
     });
   }
 
+  // api default
   api_default() {
     this.router.get("/api/status", async (ctx, next) => {
       const stats = this.manager.stats;
@@ -171,6 +238,7 @@ class ApiManagement {
     });
   }
 
+  // api default
   client_connect(schema) {
     this.router.post("/connect_client", async (ctx, next) => {
       const args = ctx.request.body || {};

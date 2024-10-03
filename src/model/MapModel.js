@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes } from "sequelize";
+import { Sequelize, DataTypes, Op } from "sequelize";
 import _admin from "./AdminModel.js";
 import _user from "./UserModel.js";
 import _linkuser from "./LinkUserModel.js"
@@ -15,7 +15,8 @@ function initModels(sequelize) {
     return {
         Admin,
         User,
-        Linkuser
+        Linkuser,
+        Op
     }
 }
 
