@@ -1,6 +1,8 @@
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
 import { randomAsciiString } from "../../generalFunction.js";
+import ResponseManager from "../service/response.js"
+
 const { User, Linkuser, Op } = initModels(sequelize);
 const jwt = require("jsonwebtoken")
 const util = require("util");
@@ -10,16 +12,20 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
 const verifyToken = util.promisify(jwt.verify);
 
 async function getToken (body) {
+    var user
     try {
-        const user = await User.findOne({
+        user = await User.findOne({
             where : {
                 email : body.email
-            //   [Op.and] : [ { email : body.email }, {name : body.name}]
             }
         });
 
         if(!user) {
-            throw new Error("User not found.");
+            user = await User.create({
+                email: body.email,
+                name: body.name,
+                userKey: randomAsciiString(),
+            })
         }
 
         const access_token = jwtGenerate(user)
@@ -34,55 +40,33 @@ async function getToken (body) {
 async function jwtRefreshTokenValidate (ctx, next) {
     try {
         const { refresh_token } = ctx.request.body;
-
-        // If there's no token, respond with a 401 error
         if (!refresh_token) {
-            ctx.status = 401;
-            ctx.body = { message: "Refresh token required" };
+            new ResponseManager(ctx).error("Refresh token required", 401)
             return;
         }
-
-        // Verify the refresh token
         const decoded = await verifyToken(refresh_token, JWT_REFRESH_SECRET);
-
-        // Token is valid, attach decoded user info to the context
         ctx.state.user = decoded;
-        await next(); // Proceed to the next middleware or function
+        await next();
     } catch (err) {
-        // If the token is invalid or expired, respond with a 401 error
-        ctx.status = 401;
-        ctx.body = { message: "Invalid or expired refresh token" };
+        console.error("Token validation error:", err);
+        new ResponseManager(ctx).error("Invalid or expired refresh token", 401)
     }
 }
 
 async function authMiddleware (ctx, next) {
     try {
-        // Get the token from the Authorization header
         const authHeader = ctx.headers.authorization;
-    
-        // If no token is found, respond with a 401 error
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          ctx.status = 401;
-          ctx.body = { message: "Authorization token required" };
+          new ResponseManager(ctx).error("Authorization token required", 403)
           return;
         }
-    
-        // Extract the token part from the 'Bearer <token>' string
         const token = authHeader.split(" ")[1];
-    
-        // Verify the token
         const decoded = jwt.verify(token, JWT_SECRET);
-    
-        // Token is valid, attach the decoded user info to the context
         ctx.state.user = decoded;
-    
-        // Proceed to the next middleware or route handler
         await next();
       } catch (err) {
-        // If the token is invalid or expired, respond with a 401 error
         console.error("Token validation error:", err);
-        ctx.status = 401;
-        ctx.body = { message: "Invalid or expired access token" };
+        new ResponseManager(ctx).error("Invalid or expired access token", 401)
       }
 }
 

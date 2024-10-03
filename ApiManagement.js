@@ -21,6 +21,7 @@ class ApiManagement {
     this.debug = Debug("localtunnel:DebugApi");
   }
 
+  // api authentication
   authentication() {
     this.router.post(this.api_v1 + "/auth/login", async (ctx, next) => {
       try {
@@ -74,6 +75,7 @@ class ApiManagement {
     })
   }
 
+  // api admin dashboard
   dashboard() {
     this.router.get("/dashboard", async (ctx, next) => {
       try {
@@ -126,6 +128,7 @@ class ApiManagement {
   }
 
   newApi() {
+    // api admin
     this.router.get(this.api_v1 + "/get_client_tunnel", async (ctx, next) => {
       // const getClient = await this.manager.getClientRegis();
       const user_link = await getUserLink();
@@ -150,6 +153,7 @@ class ApiManagement {
       };
     });
 
+    // api admin
     this.router.delete(
       this.api_v1 + "/del_client/:client",
       async (ctx, next) => {
@@ -164,10 +168,14 @@ class ApiManagement {
       }
     );
 
+    // api admin
     this.router.post(this.api_v1 + "/login", async (ctx, next) => {
       const args = ctx.request.body || {};
       this.debug(args);
       const { username, password } = args;
+
+
+
       const user_con = await checkAdmin(username, password);
 
       // console.log("user:", user_con);
@@ -181,7 +189,8 @@ class ApiManagement {
       }
     });
 
-    this.router.post(this.api_v1 + "/create_client", authMiddleware, async (ctx, next) => {
+    // api create user (ใช้เส้น /auth/login แทน)
+    this.router.post(this.api_v1 + "/create_client", async (ctx, next) => {
       const args = ctx.request.body || {};
       const data = await createUser(args);
       this.debug(args);
@@ -194,14 +203,17 @@ class ApiManagement {
       }
     });
 
-    this.router.post(this.api_v1 + "/get_key", async (ctx, next) => {
+    // api admin
+    this.router.post(this.api_v1 + "/get_key", authMiddleware, async (ctx, next) => {
       const args = ctx.request.body || {};
       const data = await checkKey(args, "get_key");
       this.debug(args);
-      ctx.body = { success: true, msg: data };
+      new ResponseManager(ctx).success(data)
+      // ctx.body = { success: true, msg: data };
     });
   }
 
+  // api default
   api_default() {
     this.router.get("/api/status", async (ctx, next) => {
       const stats = this.manager.stats;
@@ -226,6 +238,7 @@ class ApiManagement {
     });
   }
 
+  // api default
   client_connect(schema) {
     this.router.post("/connect_client", async (ctx, next) => {
       const args = ctx.request.body || {};
