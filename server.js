@@ -48,11 +48,12 @@ export default function (opt) {
     const api = new ApiManagement(router, manager);
     api.dashboard()
     api.newApi()
+    api.authentication()
     api.api_default()
     api.client_connect(schema)
 
     app.use(async (ctx, next) => {
-        await next(); // เรียกใช้งาน Middleware ถัดไป
+        await next(); // เรียกใช้งาน Middleware ถัดไป        
         if (ctx.status === 404) {
             try {
                 const filePath = path.join(__dirname, 'views', '404.html'); // กำหนดที่อยู่ของไฟล์ 404

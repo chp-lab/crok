@@ -2,7 +2,9 @@ import fs from "fs";
 import path from "path";
 import Debug from "debug";
 import { checkAdmin } from "./src/controllers/AdminController";
+import { getToken, jwtRefreshTokenValidate, authMiddleware } from "./src/service/authen"
 import { hri } from "human-readable-ids";
+import ResponseManager from "./src/service/response"
 import {
   getUserLink,
   addUserLink,
@@ -17,6 +19,59 @@ class ApiManagement {
     this.manager = manager;
     this.api_v1 = "/api/v1";
     this.debug = Debug("localtunnel:DebugApi");
+  }
+
+  authentication() {
+    this.router.post(this.api_v1 + "/auth/login", async (ctx, next) => {
+      try {
+        const result = await getToken(ctx.request.body);
+        if (!result) {
+          new ResponseManager(ctx).error("Invalid email", 404)
+          return;
+        }
+
+        const { user, access_token, refresh_token } = result;
+        const data_body = {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+          access_token,
+          refresh_token,
+        };
+        new ResponseManager(ctx).success(data_body, "Login successfully")
+      } catch (error) {
+        console.error("Authentication error:", error.message);
+        new ResponseManager(ctx).error("An error occurred during authentication.", 500)
+      }
+    })
+
+    this.router.post(this.api_v1 + "/auth/refresh", jwtRefreshTokenValidate, async (ctx, next) => {
+      const body = ctx.state.user
+      try {
+        const result = await getToken(body);
+        if (!result) {
+          new ResponseManager(ctx).error("Invalid email", 404)
+          return;
+        }
+
+        const { user, access_token, refresh_token } = result;
+        const data_body = {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+          access_token,
+          refresh_token,
+        };
+        new ResponseManager(ctx).success(data_body, "Refresh successfully")
+      } catch (error) {
+        console.error("Authentication error:", error.message);
+        new ResponseManager(ctx).error("An error occurred during authentication.", 500)
+      }
+    })
   }
 
   dashboard() {
@@ -126,7 +181,7 @@ class ApiManagement {
       }
     });
 
-    this.router.post(this.api_v1 + "/create_client", async (ctx, next) => {
+    this.router.post(this.api_v1 + "/create_client", authMiddleware, async (ctx, next) => {
       const args = ctx.request.body || {};
       const data = await createUser(args);
       this.debug(args);
