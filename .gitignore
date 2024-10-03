@@ -5,3 +5,4 @@ docker-compose.yml
 build_image.sh
 ./package-lock.json
 ./yarn.lock
+.env
