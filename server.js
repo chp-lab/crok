@@ -3,7 +3,7 @@ import Koa from 'koa';
 import tldjs from 'tldjs';
 // import Debug from 'debug';
 import http, { request } from 'http';
-import { hri } from 'human-readable-ids';
+// import { hri } from 'human-readable-ids';
 import Router from 'koa-router';
 const cors = require('@koa/cors');
 const bodyParser = require('koa-bodyparser');
@@ -75,7 +75,8 @@ export default function (opt) {
         // sequelize.sync({ force: true }).then(() => {
         //     console.log("Drop and re-sync db.");
         // });
-        emptyTable()
+        // emptyTable()
+        
     } catch (error) {
         console.error("Unable to connect to the database:", error);
     }
