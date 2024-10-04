@@ -1,6 +1,4 @@
 import fs from "fs";
-const util = require('util');
-const readFile = util.promisify(fs.readFile);
 import path from "path";
 import Debug from "debug";
 import { checkAdmin, signupAdmin } from "./src/controllers/AdminController";
@@ -24,6 +22,9 @@ import {
 } from "./src/controllers/UserController";
 
 import os from "os";
+import { getDisk } from "./system/disk";
+import { getSwap } from "./system/swap";
+import { getMemory } from "./system/memory";
 
 class ApiManagement {
   constructor(router, manager) {
@@ -352,65 +353,39 @@ class ApiManagement {
   api_default() {
     this.router.get("/api/status", authMiddlewareAdmin, async (ctx, next) => {
       const stats = this.manager.stats;
-    
-      // ใช้ async/await ในการอ่านข้อมูลจาก /proc/meminfo
-      let swap = {};
-      try {
-        const data = await readFile("/proc/meminfo", "utf8");
-    
-        // แยกบรรทัดต่าง ๆ
-        const lines = data.split("\n");
-    
-        // ค้นหาบรรทัดที่มีข้อมูล Swap
-        const swapTotalLine = lines.find((line) => line.startsWith("SwapTotal"));
-        const swapFreeLine = lines.find((line) => line.startsWith("SwapFree"));
-    
-        if (swapTotalLine && swapFreeLine) {
-          // แปลงค่าที่ได้จากบรรทัดเป็นตัวเลขหน่วย KB
-          const swapTotal = parseInt(swapTotalLine.split(":")[1].trim().split(" ")[0], 10);
-          const swapFree = parseInt(swapFreeLine.split(":")[1].trim().split(" ")[0], 10);
-    
-          // คำนวณ Swap ที่ใช้งานอยู่
-          const swapUsed = swapTotal - swapFree;
-    
-          swap = {
-            total_swap: parseFloat((swapTotal / (1024 * 1024)).toFixed(1)),
-            free_swap: parseFloat((swapFree / (1024 * 1024)).toFixed(1)),
-            use_swap: parseFloat((swapUsed / (1024 * 1024)).toFixed(1)),
-          };
-        } else {
-          console.error("Swap information not found in /proc/meminfo");
-        }
-      } catch (err) {
-        // console.error("Error reading /proc/meminfo:", err);
-      }
-    
+
       const memoryUsage = process.memoryUsage();
       const memoryInMB = {
         rss: parseFloat((memoryUsage.rss / (1024 * 1024)).toFixed(2)),
-        heapTotal: parseFloat((memoryUsage.heapTotal / (1024 * 1024)).toFixed(2)),
+        heapTotal: parseFloat(
+          (memoryUsage.heapTotal / (1024 * 1024)).toFixed(2)
+        ),
         heapUsed: parseFloat((memoryUsage.heapUsed / (1024 * 1024)).toFixed(2)),
         external: parseFloat((memoryUsage.external / (1024 * 1024)).toFixed(2)),
-        arrayBuffers: parseFloat((memoryUsage.arrayBuffers / (1024 * 1024)).toFixed(2)),
+        arrayBuffers: parseFloat(
+          (memoryUsage.arrayBuffers / (1024 * 1024)).toFixed(2)
+        ),
       };
-    
+
+      const disk = await getDisk();
+      const swap = await getSwap();
+      const mem = getMemory();
       const cpus = os.cpus();
-      const mamTotal = parseFloat((os.totalmem() / (1024 * 1024 * 1024)).toFixed(2));
-      const mamFree = parseFloat((os.freemem() / (1024 * 1024 * 1024)).toFixed(2));
-    
+
       const data = {
         tunnels: stats.tunnels,
         mem: memoryInMB,
         cpu: cpus,
         cpu_num_core: cpus.length,
         memory: {
-          memtotal: mamTotal,
-          mamfree: mamFree,
-          mamuse: parseFloat((mamTotal - mamFree).toFixed(2)),
+          memtotal: mem[0],
+          mamfree: mem[1],
+          mamuse: parseFloat((mem[0] - mem[1]).toFixed(2)),
         },
         swap: swap,
+        disk: disk,
       };
-    
+
       new ResponseManager(ctx).success(data, "Get monitor success.");
     });
 

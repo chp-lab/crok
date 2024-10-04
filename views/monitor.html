@@ -108,49 +108,54 @@
         </div>
 
         <div class="row">
-          <h4>RAM</h4>
-          <table class="table table-bordered border-primary">
-            <thead>
-              <!-- <tr class="text-center">
-                <th colspan="8">{{tunnel}}</th>
-              </tr> -->
-              <tr class="text-center">
-                <th scope="col">Memory Total</th>
-                <th scope="col">Memory Use</th>
-                <th scope="col">Memory Free</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="text-center">
-                <td>{{ memory.memtotal }} GB</td>
-                <td>{{ memory.mamuse }} GB</td>
-                <td>{{ memory.mamfree }} GB</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <div class="col-6">
+            <h4>RAM</h4>
+            <table class="table table-bordered border-primary">
+              <thead>
+                <!-- <tr class="text-center">
+                  <th colspan="8">{{tunnel}}</th>
+                </tr> -->
+                <tr class="text-center">
+                  <th scope="col">Memory Total</th>
+                  <th scope="col">Memory Use</th>
+                  <th scope="col">Memory Free</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-center">
+                  <td>{{ memory.memtotal }} GB</td>
+                  <td>{{ memory.mamuse }} GB</td>
+                  <td>{{ memory.mamfree }} GB</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-        <div class="row">
-          <h4>SWAP</h4>
-          <table class="table table-bordered border-primary">
-            <thead>
-              <!-- <tr class="text-center">
+          <div class="col-6">
+            <h4>SWAP</h4>
+            <table class="table table-bordered border-primary">
+              <thead>
+                <!-- <tr class="text-center">
                 <th colspan="8">{{tunnel}}</th>
               </tr> -->
-              <tr class="text-center">
-                <th scope="col">Total</th>
-                <th scope="col">Use</th>
-                <th scope="col">Free</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="text-center">
-                <td v-if="swap.total_swap">{{ swap.total_swap }} GB</td><td v-else>-</td>
-                <td v-if="swap.free_swap">{{ swap.free_swap }} GB</td><td v-else>-</td>
-                <td v-if="swap.use_swap">{{ swap.use_swap }} GB</td><td v-else>-</td>
-              </tr>
-            </tbody>
-          </table>
+                <tr class="text-center">
+                  <th scope="col">Total</th>
+                  <th scope="col">Use</th>
+                  <th scope="col">Free</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-center">
+                  <td v-if="swap.total_swap">{{ swap.total_swap }} GB</td>
+                  <td v-else>-</td>
+                  <td v-if="swap.free_swap">{{ swap.free_swap }} GB</td>
+                  <td v-else>-</td>
+                  <td v-if="swap.use_swap">{{ swap.use_swap }} GB</td>
+                  <td v-else>-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="row">
@@ -297,7 +302,7 @@
             this.memory = response.data.results.memory;
             this.tunnel = response.data.results.tunnels;
             this.memory_use_tunnel = response.data.results.mem;
-            this.swap = response.data.results.swap
+            this.swap = response.data.results.swap;
           })
           .catch((error) => {
             console.log(error);
