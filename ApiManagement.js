@@ -84,7 +84,7 @@ class ApiManagement {
 
   // api admin dashboard
   dashboard() {
-    this.router.get("/dashboard", authMiddlewareAdmin,async (ctx, next) => {
+    this.router.get("/dashboard",async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "dashboard.html");
         const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
@@ -110,7 +110,7 @@ class ApiManagement {
       }
     });
 
-    this.router.get("/dashboard/login", authMiddlewareAdmin,async (ctx, next) => {
+    this.router.get("/dashboard/login",async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "login.html");
         const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
@@ -123,7 +123,7 @@ class ApiManagement {
       }
     });
 
-    this.router.get(this.api_v1 + "/get_user_all", authMiddlewareAdmin,async (ctx, next) => {
+    this.router.get(this.api_v1 + "/get_user_all",async (ctx, next) => {
       try {
         const clientAll = await getAllUser();
         ctx.body = clientAll;
