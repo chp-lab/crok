@@ -374,9 +374,9 @@ class ApiManagement {
           const swapUsed = swapTotal - swapFree;
     
           swap = {
-            total_swap: (swapTotal / (1024 * 1024)).toFixed(2),
-            free_swap: (swapFree / (1024 * 1024)).toFixed(2),
-            use_swap: (swapUsed / (1024 * 1024)).toFixed(2),
+            total_swap: parseFloat((swapTotal / (1024 * 1024)).toFixed(1)),
+            free_swap: parseFloat((swapFree / (1024 * 1024)).toFixed(1)),
+            use_swap: parseFloat((swapUsed / (1024 * 1024)).toFixed(1)),
           };
         } else {
           console.error("Swap information not found in /proc/meminfo");
