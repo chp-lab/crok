@@ -380,6 +380,9 @@ class ApiManagement {
 
             // คำนวณ Swap ที่ใช้งานอยู่
             const swapUsed = swapTotal - swapFree;
+            console.log("Total Swap:", (swapTotal / 1024).toFixed(2), "MB");
+            console.log("Free Swap:", (swapFree / 1024).toFixed(2), "MB");
+            console.log("Used Swap:", (swapUsed / 1024).toFixed(2), "MB");
             swap = {
               total_swap: (swapTotal / (1024 * 1024)).toFixed(2),
               free_swap: (swapFree / (1024 * 1024)).toFixed(2),
@@ -391,6 +394,8 @@ class ApiManagement {
         }
       });
 
+      console.log(">>> ",swap);
+      
       const memoryUsage = process.memoryUsage();
       const memoryInMB = {
         rss: parseFloat((memoryUsage.rss / (1024 * 1024)).toFixed(2)),
