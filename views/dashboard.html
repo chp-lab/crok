@@ -237,7 +237,7 @@
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 })
                     .then((response) => {
-                        consock = response.data.connected_sockets;
+                        consock = response.data.results.connected_sockets;
                     })
                     .catch((error) => {
                         console.log(error);

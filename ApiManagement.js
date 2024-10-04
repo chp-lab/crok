@@ -84,6 +84,7 @@ class ApiManagement {
 
   // api admin dashboard
   dashboard() {
+    // read html dashboard
     this.router.get("/dashboard",async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "dashboard.html");
@@ -97,7 +98,8 @@ class ApiManagement {
       }
     });
 
-    this.router.get("/auth_client", authMiddlewareAdmin, async (ctx, next) => {
+    // read html auth_client
+    this.router.get("/auth_client", async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "auth_client.html");
         const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
@@ -109,7 +111,7 @@ class ApiManagement {
         ctx.body = "Error loading the page";
       }
     });
-
+    // read html login
     this.router.get("/dashboard/login",async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "login.html");
@@ -201,11 +203,10 @@ class ApiManagement {
 
     // api admin
     this.router.post(this.api_v1 + "/signup",async (ctx, next) => {
-      signupAdmin
       const body = ctx.request.body;
 
-      if (!body.username || !body.password) {
-        new ResponseManager(ctx).error("Username and password are required", 400)
+      if (!body.username || !body.password || !body.email || !body.fullname) {
+        new ResponseManager(ctx).error("Username, password, email or fullname are required", 400)
         return;
       }
 
