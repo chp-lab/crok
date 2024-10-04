@@ -350,6 +350,38 @@ class ApiManagement {
   api_default() {
     this.router.get("/api/status", authMiddlewareAdmin, async (ctx, next) => {
       const stats = this.manager.stats;
+      fs.readFile('/proc/meminfo', 'utf8', (err, data) => {
+        if (err) {
+          console.error('Error reading /proc/meminfo:', err);
+          return;
+        }
+      
+        // แยกบรรทัดต่าง ๆ
+        const lines = data.split('\n');
+      
+        // ค้นหาข้อมูลหน่วยความจำและ Swap
+        const memTotal = parseInt(lines.find(line => line.startsWith('MemTotal')).split(':')[1].trim().split(' ')[0], 10);
+        const memFree = parseInt(lines.find(line => line.startsWith('MemFree')).split(':')[1].trim().split(' ')[0], 10);
+        const buffers = parseInt(lines.find(line => line.startsWith('Buffers')).split(':')[1].trim().split(' ')[0], 10);
+        const cached = parseInt(lines.find(line => line.startsWith('Cached')).split(':')[1].trim().split(' ')[0], 10);
+        
+        const swapTotal = parseInt(lines.find(line => line.startsWith('SwapTotal')).split(':')[1].trim().split(' ')[0], 10);
+        const swapFree = parseInt(lines.find(line => line.startsWith('SwapFree')).split(':')[1].trim().split(' ')[0], 10);
+      
+        // คำนวณค่าที่คล้ายกับ free -h
+        const usedMem = memTotal - memFree - buffers - cached;
+        const usedSwap = swapTotal - swapFree;
+      
+        console.log("Total Memory:", (memTotal / 1024).toFixed(2), "MB");
+        console.log("Used Memory:", (usedMem / 1024).toFixed(2), "MB");
+        console.log("Free Memory:", (memFree / 1024).toFixed(2), "MB");
+        console.log("Buffers:", (buffers / 1024).toFixed(2), "MB");
+        console.log("Cached:", (cached / 1024).toFixed(2), "MB");
+      
+        console.log("Total Swap:", (swapTotal / 1024).toFixed(2), "MB");
+        console.log("Used Swap:", (usedSwap / 1024).toFixed(2), "MB");
+        console.log("Free Swap:", (swapFree / 1024).toFixed(2), "MB");
+      });
 
       const memoryUsage = process.memoryUsage();
       const memoryInMB = {
