@@ -93,7 +93,9 @@
             <tbody>
               <tr
                 v-for="(cpu, index) in data_env.cpu"
-                :key="index" class="text-center">
+                :key="index"
+                class="text-center"
+              >
                 <th scope="row">{{ index + 1 }}</th>
                 <!-- <th scope="row"><i class="bi bi-cpu blinking-icon"></i></th> -->
                 <td>{{ cpu.model }}</td>
@@ -129,6 +131,29 @@
         </div>
 
         <div class="row">
+          <h4>SWAP</h4>
+          <table class="table table-bordered border-primary">
+            <thead>
+              <!-- <tr class="text-center">
+                <th colspan="8">{{tunnel}}</th>
+              </tr> -->
+              <tr class="text-center">
+                <th scope="col">Total</th>
+                <th scope="col">Use</th>
+                <th scope="col">Free</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="text-center">
+                <td v-if="swap.total_swap">{{ swap.total_swap }} GB</td><td v-else>-</td>
+                <td v-if="swap.free_swap">{{ swap.free_swap }} GB</td><td v-else>-</td>
+                <td v-if="swap.use_swap">{{ swap.use_swap }} GB</td><td v-else>-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row">
           <h4>Tunnel User Memory</h4>
           <table class="table table-bordered border-primary">
             <thead>
@@ -156,7 +181,6 @@
             </tbody>
           </table>
         </div>
-
       </div>
     </div>
     <script
@@ -250,9 +274,10 @@
         tunnel: "Tunnel Dashboard",
         data_env: [],
         cpu_core: 0,
-        tunnel:0,
-        memory:{},
-        memory_use_tunnel:{},
+        tunnel: 0,
+        memory: {},
+        memory_use_tunnel: {},
+        swap: {},
         connected_socket: {},
         username: "", // stores the logged-in username
       };
@@ -268,10 +293,11 @@
           .then((response) => {
             console.log(response.data.results);
             this.data_env = response.data.results;
-            this.cpu_core = response.data.results.cpu_num_core
-            this.memory = response.data.results.memory
-            this.tunnel = response.data.results.tunnels
-            this.memory_use_tunnel = response.data.results.mem
+            this.cpu_core = response.data.results.cpu_num_core;
+            this.memory = response.data.results.memory;
+            this.tunnel = response.data.results.tunnels;
+            this.memory_use_tunnel = response.data.results.mem;
+            this.swap = response.data.results.swap
           })
           .catch((error) => {
             console.log(error);
