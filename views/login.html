@@ -145,7 +145,8 @@
                             // Store access_token and refresh_token in localStorage
                             localStorage.setItem('access_token', data.results.access_token);
                             localStorage.setItem('refresh_token', data.results.refresh_token);
-                            
+                            localStorage.setItem('fullname', data.results.user.fullname);
+                            localStorage.setItem('email', data.results.user.email);
                             // Redirect to dashboard
                             window.location.href = "/dashboard";
                         } else {

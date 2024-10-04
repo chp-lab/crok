@@ -52,7 +52,7 @@
                           </li>
                     </ul>
                     <span class="navbar-text">
-                        <span class="navbar-text">User: {{ username }}</span>
+                        <span class="navbar-text">Admin : {{ username }}</span>
                     </span>
                     <span class="navbar-text">
                         <button @click="logout" class="btn btn-sm btn-danger ms-3">Logout</button>
@@ -93,7 +93,7 @@
                             <!-- <td>{{ con_sock(user.id) }}</td> -->
                             <td>{{ user.createdAt }}</td>
                             <td><button type="button" class="btn btn-sm btn-warning"
-                                    @click="removeClient(user.subdomain)">ลบ</button></td>
+                                    @click="removeClient(user.subdomain)">remove</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -264,7 +264,7 @@
                 window.location.href = "/dashboard/login";
             } else {
                 // Display the username and fetch client data
-                this.username = localStorage.getItem('username'); // Fetch from localStorage
+                this.username = localStorage.getItem('fullname'); // Fetch from localStorage
                 this.getClient(); // Fetch the client data
                 setInterval(() => {
                     this.getClient(); // Refresh client data every 5 seconds
