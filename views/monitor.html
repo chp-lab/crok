@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="https://cdn-icons-png.flaticon.com/512/8654/8654262.png"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div id="app">
+      <!-- เพิ่ม Navbar -->
+      <nav class="navbar navbar-expand-lg bg-primary mb-4" data-bs-theme="dark">
+        <div class="container-fluid">
+          <img
+            src="/images/logo1.png"
+            alt="Logo"
+            width="75"
+            height="35"
+            class="d-inline-block align-text-top me-2"
+          />
+          <!-- <a class="navbar-brand text-warning-emphasis">Tunnel Giant</a> -->
+          <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+                    aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button> -->
+          <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/dashboard"
+                  >Tunnel Running</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link active"
+                  aria-current="page"
+                  href="/auth_client"
+                  >Your Authtoken Client</a
+                >
+              </li>
+              <li class="nav-item bg-info-subtle">
+                <a class="nav-link active" aria-current="page" href="/monitor"
+                  >Monitor VM</a
+                >
+              </li>
+            </ul>
+            <span class="navbar-text">
+              <span class="navbar-text">Admin : {{ username }}</span>
+            </span>
+            <span class="navbar-text">
+              <button @click="logout" class="btn btn-sm btn-danger ms-3">
+                Logout
+              </button>
+            </span>
+          </div>
+        </div>
+      </nav>
+
+      <!-- ตารางข้อมูล -->
+      <div class="container">
+        <div class="row">
+          <h4>CPU {{cpu_core}} CORE</h4>
+          <table class="table table-bordered border-primary">
+            <thead>
+              <!-- <tr class="text-center">
+                <th colspan="8">{{tunnel}}</th>
+              </tr> -->
+              <tr class="text-center">
+                <th scope="col">no</th>
+                <th scope="col">Model</th>
+                <th scope="col">Speed</th>
+                <th scope="col">Times</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(cpu, index) in data_env.cpu"
+                :key="index" class="text-center">
+                <th scope="row">{{ index + 1 }}</th>
+                <!-- <th scope="row"><i class="bi bi-cpu blinking-icon"></i></th> -->
+                <td>{{ cpu.model }}</td>
+                <td>{{ cpu.speed/1000 }} Ghz</td>
+                <td>{{ cpu.times }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row">
+          <h4>RAM</h4>
+          <table class="table table-bordered border-primary">
+            <thead>
+              <!-- <tr class="text-center">
+                <th colspan="8">{{tunnel}}</th>
+              </tr> -->
+              <tr class="text-center">
+                <th scope="col">Memory Total</th>
+                <th scope="col">Memory Use</th>
+                <th scope="col">Memory Free</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="text-center">
+                <td>{{ memory.memtotal }} GB</td>
+                <td>{{ memory.mamuse }} GB</td>
+                <td>{{ memory.mamfree }} GB</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row">
+          <h4>Tunnel User Memory</h4>
+          <table class="table table-bordered border-primary">
+            <thead>
+              <!-- <tr class="text-center">
+                <th colspan="8">{{tunnel}}</th>
+              </tr> -->
+              <tr class="text-center">
+                <th scope="col">Tunnels Client Number</th>
+                <th scope="col">rss</th>
+                <th scope="col">heapTotal</th>
+                <th scope="col">heapUsed</th>
+                <th scope="col">external</th>
+                <th scope="col">arrayBuffers</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="text-center">
+                <td>{{ tunnel }}</td>
+                <td>{{ memory_use_tunnel.rss }} MB</td>
+                <td>{{ memory_use_tunnel.heapTotal }} MB</td>
+                <td>{{ memory_use_tunnel.heapUsed }} MB</td>
+                <td>{{ memory_use_tunnel.external }} MB</td>
+                <td>{{ memory_use_tunnel.arrayBuffers }} MB</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
+
+<!-- <script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                tunnel: "Tunnel Dashboard",
+                data_client: [],
+                connected_socket: {},
+                username: '' // เก็บชื่อผู้ใช้ที่ล็อกอินเข้ามา
+            }
+        },
+        methods: {
+            getClient() {
+                axios.get('/api/v1/get_client_tunnel')
+                    .then((response) => {
+                        this.data_client = response.data.all_client;
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            removeClient(cl) {
+                if (confirm('Are you sure you want to delete this client '+cl+' ?')) {
+                    axios.delete('/api/v1/del_client/' + cl)
+                        .then((response) => {
+                            this.getClient();
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                }
+            },
+            con_sock(cl) {
+                var consock = 0
+                axios.get('/api/tunnels/' + cl + '/status')
+                    .then((response) => {
+                        consock = response.data.connected_sockets;
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        consock = 0
+                    });
+                return consock
+            },
+            getCookie(name) {
+                let nameEQ = name + "=";
+                let ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            },
+            logout() {
+                // ลบ cookie และ redirect ไปยังหน้า login
+                document.cookie = "username=; Max-Age=-99999999;";
+                window.location.href = "/dashboard/login";
+            }
+        },
+        mounted() {
+            const username = this.getCookie('username');
+            if (!username) {
+                window.location.href = "/dashboard/login"; // ถ้ายังไม่ได้ล็อกอินให้ redirect ไปหน้า login
+            } else {
+                this.username = username; // แสดง username ใน Navbar
+                this.getClient(); // ดึงข้อมูล client
+                setInterval(() => {
+                    this.getClient();
+                }, 5000);
+            }
+        }
+    });
+
+    app.mount('#app');
+</script> -->
+
+<script>
+  const app = Vue.createApp({
+    data() {
+      return {
+        tunnel: "Tunnel Dashboard",
+        data_env: [],
+        cpu_core: 0,
+        tunnel:0,
+        memory:{},
+        memory_use_tunnel:{},
+        connected_socket: {},
+        username: "", // stores the logged-in username
+      };
+    },
+    methods: {
+      // Method to get clients, with token in Authorization header
+      getClient() {
+        const accessToken = localStorage.getItem("access_token");
+        axios
+          .get("/api/status", {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          })
+          .then((response) => {
+            console.log(response.data.results);
+            this.data_env = response.data.results;
+            this.cpu_core = response.data.results.cpu_num_core
+            this.memory = response.data.results.memory
+            this.tunnel = response.data.results.tunnels
+            this.memory_use_tunnel = response.data.results.mem
+          })
+          .catch((error) => {
+            console.log(error);
+            if (error.response && error.response.status === 401) {
+              this.logout(); // logout on unauthorized access
+            }
+          });
+      },
+      // Method to remove tokens and logout
+      logout() {
+        // Remove tokens from localStorage
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        // Redirect to login page
+        window.location.href = "/dashboard/login";
+      },
+    },
+    mounted() {
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) {
+        // If no token, redirect to login
+        window.location.href = "/dashboard/login";
+      } else {
+        // Display the username and fetch client data
+        this.username = localStorage.getItem("fullname"); // Fetch from localStorage
+        this.getClient(); // Fetch the client data
+        setInterval(() => {
+          this.getClient(); // Refresh client data every 5 seconds
+        }, 5000);
+      }
+    },
+  });
+
+  app.mount("#app");
+</script>

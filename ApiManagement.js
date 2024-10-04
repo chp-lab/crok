@@ -124,10 +124,24 @@ class ApiManagement {
         ctx.body = "Error loading the page";
       }
     });
+
     // read html login
     this.router.get("/dashboard/login", async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "login.html");
+        const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
+
+        ctx.type = "html"; // กำหนด type เป็น HTML
+        ctx.body = html; // ส่งไฟล์ HTML ไปยัง body
+      } catch (err) {
+        ctx.status = 500;
+        ctx.body = "Error loading the page";
+      }
+    });
+
+    this.router.get("/monitor", async (ctx, next) => {
+      try {
+        const filePath = path.join(__dirname, "views", "monitor.html");
         const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
 
         ctx.type = "html"; // กำหนด type เป็น HTML
@@ -356,15 +370,18 @@ class ApiManagement {
       const mamFree = parseFloat(
         (os.freemem() / (1024 * 1024 * 1024)).toFixed(2)
       );
-      ctx.body = {
+      const data = {
         tunnels: stats.tunnels,
         mem: memoryInMB,
         cpu: cpus,
         cpu_num_core: cpus.length,
-        memtotal: mamTotal,
-        mamfree: mamFree,
-        mamuse: parseFloat((mamTotal - mamFree).toFixed(2)),
+        memory: {
+          memtotal: mamTotal,
+          mamfree: mamFree,
+          mamuse: parseFloat((mamTotal - mamFree).toFixed(2)),
+        },
       };
+      new ResponseManager(ctx).success(data, "Get monitor success.");
     });
 
     this.router.get("/api/tunnels/:id/status", async (ctx, next) => {
