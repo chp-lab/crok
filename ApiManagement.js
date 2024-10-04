@@ -156,7 +156,7 @@ class ApiManagement {
           });
         });
       });
-      new ResponseManager(ctx).success({ client_all : all }, "Delete success.")
+      new ResponseManager(ctx).success({ client_all : all }, "Get client success.")
       // ctx.body = {
       //   all_client: all,
       // };

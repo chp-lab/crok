@@ -71,7 +71,7 @@ async function authMiddleware (ctx, next) {
         ctx.state.user = decoded;
         await next();
       } catch (err) {
-        console.error("Token validation error:", err);
+        console.error("Token validation error:", err.message);
         new ResponseManager(ctx).error("Invalid or expired access token", 401)
       }
 }
@@ -160,7 +160,7 @@ async function authMiddlewareAdmin (ctx, next) {
         ctx.state.user = decoded;
         await next();
       } catch (err) {
-        console.error("Token validation error:", err);
+        console.error("Token validation error:", err.message);
         new ResponseManager(ctx).error("Invalid or expired access token", 401)
       }
 }
