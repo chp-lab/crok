@@ -2,7 +2,7 @@ import sequelize from "../db/database.js"
 import initModels from "../model/MapModel.js"
 import bcrypt from "bcryptjs"
 
-const { User,Admin } = initModels(sequelize)
+const { User,Admin, Op } = initModels(sequelize)
 
 async function checkAdmin(username, email) {
     try {
@@ -23,14 +23,23 @@ async function signupAdmin(body) {
     try {
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-    
-        // Save the user to the database
-        const newUser = await Admin.create({
-          username,
-          password: hashedPassword,
-          fullname,
-          email
-        });
+
+        const admin = await Admin.findOne({
+            where : {
+                [Op.or] : [{ email },{ username }]
+            }
+        })
+
+        if(!admin) {
+            var newUser = await Admin.create({
+                username,
+                password: hashedPassword,
+                fullname,
+                email
+            });
+        } else {
+            return 
+        }
     
         return newUser
       } catch (error) {

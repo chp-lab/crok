@@ -205,8 +205,13 @@ class ApiManagement {
     this.router.post(this.api_v1 + "/signup",async (ctx, next) => {
       const body = ctx.request.body;
 
-      if (!body.username || !body.password || !body.email || !body.fullname) {
-        new ResponseManager(ctx).error("Username, password, email or fullname are required", 400)
+      if (!body.username || !body.password || !body.email || !body.fullname || !body.confirm_password) {
+        new ResponseManager(ctx).error("Username, password, confirm_password, email or fullname are required", 400)
+        return;
+      }
+
+      if (body.password !== body.confirm_password) {
+        new ResponseManager(ctx).error("password and confirm_password are not the same.", 400)
         return;
       }
 
@@ -214,7 +219,7 @@ class ApiManagement {
         const signup = await signupAdmin(body)
 
         if (!signup) {
-          new ResponseManager(ctx).error("Invalid username or password", 404)
+          new ResponseManager(ctx).error("email or username is dubplicate.", 400)
           return;
         }
 
