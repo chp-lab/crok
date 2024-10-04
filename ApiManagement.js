@@ -354,39 +354,40 @@ class ApiManagement {
       fs.readFile("/proc/meminfo", "utf8", (err, data) => {
         if (err) {
           // console.error("Error reading /proc/meminfo:", err);
-          console.error("Error reading /proc/meminfo");
           // return;
-        }
-
-        // แยกบรรทัดต่าง ๆ
-        const lines = data.split("\n");
-
-        // ค้นหาบรรทัดที่มีข้อมูล Swap
-        const swapTotalLine = lines.find((line) =>
-          line.startsWith("SwapTotal")
-        );
-        const swapFreeLine = lines.find((line) => line.startsWith("SwapFree"));
-
-        if (swapTotalLine && swapFreeLine) {
-          // แปลงค่าที่ได้จากบรรทัดเป็นตัวเลขหน่วย KB
-          const swapTotal = parseInt(
-            swapTotalLine.split(":")[1].trim().split(" ")[0],
-            10
-          );
-          const swapFree = parseInt(
-            swapFreeLine.split(":")[1].trim().split(" ")[0],
-            10
-          );
-
-          // คำนวณ Swap ที่ใช้งานอยู่
-          const swapUsed = swapTotal - swapFree;
-          swap = {
-            total_swap: (swapTotal / (1024 * 1024)).toFixed(2),
-            free_swap: (swapFree / (1024 * 1024)).toFixed(2),
-            use_swap: (swapUsed / (1024 * 1024)).toFixed(2),
-          };
         } else {
-          console.error("Swap information not found in /proc/meminfo");
+          // แยกบรรทัดต่าง ๆ
+          const lines = data.split("\n");
+
+          // ค้นหาบรรทัดที่มีข้อมูล Swap
+          const swapTotalLine = lines.find((line) =>
+            line.startsWith("SwapTotal")
+          );
+          const swapFreeLine = lines.find((line) =>
+            line.startsWith("SwapFree")
+          );
+
+          if (swapTotalLine && swapFreeLine) {
+            // แปลงค่าที่ได้จากบรรทัดเป็นตัวเลขหน่วย KB
+            const swapTotal = parseInt(
+              swapTotalLine.split(":")[1].trim().split(" ")[0],
+              10
+            );
+            const swapFree = parseInt(
+              swapFreeLine.split(":")[1].trim().split(" ")[0],
+              10
+            );
+
+            // คำนวณ Swap ที่ใช้งานอยู่
+            const swapUsed = swapTotal - swapFree;
+            swap = {
+              total_swap: (swapTotal / (1024 * 1024)).toFixed(2),
+              free_swap: (swapFree / (1024 * 1024)).toFixed(2),
+              use_swap: (swapUsed / (1024 * 1024)).toFixed(2),
+            };
+          } else {
+            console.error("Swap information not found in /proc/meminfo");
+          }
         }
       });
 
