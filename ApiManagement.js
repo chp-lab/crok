@@ -1,8 +1,15 @@
 import fs from "fs";
 import path from "path";
 import Debug from "debug";
-import { checkAdmin } from "./src/controllers/AdminController";
-import { getToken, jwtRefreshTokenValidate, authMiddleware } from "./src/service/authen"
+import { checkAdmin, signupAdmin } from "./src/controllers/AdminController";
+import { getToken, 
+  jwtRefreshTokenValidate, 
+  authMiddleware, 
+  getTokenAdmin, 
+  jwtRefreshTokenValidateAdmin, 
+  authMiddlewareAdmin,
+  getNewTokenAdmin 
+} from "./src/service/authen"
 import { hri } from "human-readable-ids";
 import ResponseManager from "./src/service/response"
 import {
@@ -77,7 +84,7 @@ class ApiManagement {
 
   // api admin dashboard
   dashboard() {
-    this.router.get("/dashboard", async (ctx, next) => {
+    this.router.get("/dashboard", authMiddlewareAdmin,async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "dashboard.html");
         const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
@@ -90,7 +97,7 @@ class ApiManagement {
       }
     });
 
-    this.router.get("/auth_client", async (ctx, next) => {
+    this.router.get("/auth_client", authMiddlewareAdmin, async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "auth_client.html");
         const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
@@ -103,7 +110,7 @@ class ApiManagement {
       }
     });
 
-    this.router.get("/dashboard/login", async (ctx, next) => {
+    this.router.get("/dashboard/login", authMiddlewareAdmin,async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "login.html");
         const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
@@ -116,7 +123,7 @@ class ApiManagement {
       }
     });
 
-    this.router.get(this.api_v1 + "/get_user_all", async (ctx, next) => {
+    this.router.get(this.api_v1 + "/get_user_all", authMiddlewareAdmin,async (ctx, next) => {
       try {
         const clientAll = await getAllUser();
         ctx.body = clientAll;
@@ -129,7 +136,7 @@ class ApiManagement {
 
   newApi() {
     // api admin
-    this.router.get(this.api_v1 + "/get_client_tunnel", async (ctx, next) => {
+    this.router.get(this.api_v1 + "/get_client_tunnel", authMiddlewareAdmin, async (ctx, next) => {
       // const getClient = await this.manager.getClientRegis();
       const user_link = await getUserLink();
       // console.log(user_link);
@@ -147,45 +154,104 @@ class ApiManagement {
           });
         });
       });
-
-      ctx.body = {
-        all_client: all,
-      };
+      new ResponseManager(ctx).success({ client_all : all }, "Delete success.")
+      // ctx.body = {
+      //   all_client: all,
+      // };
     });
 
     // api admin
-    this.router.delete(
-      this.api_v1 + "/del_client/:client",
-      async (ctx, next) => {
+    this.router.delete(this.api_v1 + "/del_client/:client", authMiddlewareAdmin, async (ctx, next) => {
         const clientId = ctx.params.client;
         this.manager.removeClient(clientId);
         this.debug(clientId);
-
-        ctx.body = {
-          msg: "ok",
-          data: clientId,
-        };
+        new ResponseManager(ctx).success(clientId, "Delete success.")
       }
     );
 
+    this.router.post(this.api_v1 + "/refresh", jwtRefreshTokenValidateAdmin, async (ctx, next) => {
+      const args = ctx.state.admin || {};
+      this.debug(args);
+      const { email } = args;
+      try {
+        const user_con = await getNewTokenAdmin(email);
+
+        if (!user_con) {
+          new ResponseManager(ctx).error("Invalid email", 404)
+          return;
+        }
+
+        const { admin, access_token, refresh_token } = user_con;
+        const data_body = {
+          user: {
+            id: admin.id,
+            email: admin.email,
+            fullname: admin.fullname,
+          },
+          access_token,
+          refresh_token,
+        };
+
+        new ResponseManager(ctx).success(data_body, "Login successfully")
+      } catch (error) {
+        console.error("login fail", error.message);
+        new ResponseManager(ctx).error("login fail", 500)
+      }
+    })
+
     // api admin
-    this.router.post(this.api_v1 + "/login", async (ctx, next) => {
+    this.router.post(this.api_v1 + "/signup",async (ctx, next) => {
+      signupAdmin
+      const body = ctx.request.body;
+
+      if (!body.username || !body.password) {
+        new ResponseManager(ctx).error("Username and password are required", 400)
+        return;
+      }
+
+      try {
+        const signup = await signupAdmin(body)
+
+        if (!signup) {
+          new ResponseManager(ctx).error("Invalid username or password", 404)
+          return;
+        }
+
+        new ResponseManager(ctx).success(null, "Signup new admin success.")
+      } catch (error) {
+        console.error("Signup fail", error.message);
+        new ResponseManager(ctx).error("Signup fail", 500)
+      }
+    })
+
+    // api admin
+    this.router.post(this.api_v1 + "/signin", async (ctx, next) => {
       const args = ctx.request.body || {};
       this.debug(args);
       const { username, password } = args;
+      try {
+        const user_con = await getTokenAdmin(username, password);
 
+        if (!user_con) {
+          new ResponseManager(ctx).error("Invalid username or password", 404)
+          return;
+        }
 
+        const { admin, access_token, refresh_token } = user_con;
+        const data_body = {
+          user: {
+            id: admin.id,
+            email: admin.email,
+            fullname: admin.fullname,
+          },
+          access_token,
+          refresh_token,
+        };
 
-      const user_con = await checkAdmin(username, password);
-
-      // console.log("user:", user_con);
-
-      // if (username == process.env.USER_NAME && password == process.env.PASS_WORD) {
-      if (user_con !== null) {
-        // if(true){
-        ctx.body = { success: true, user: user_con.fullname };
-      } else {
-        ctx.body = { success: false, user: "" };
+        new ResponseManager(ctx).success(data_body, "Login successfully")
+      } catch (error) {
+        console.error("login fail", error.message);
+        new ResponseManager(ctx).error("login fail", 500)
       }
     });
 
@@ -196,20 +262,21 @@ class ApiManagement {
       this.debug(args);
       if (data.success) {
         this.debug("createUser success");
-        ctx.body = { success: true, msg: data.msg };
+        new ResponseManager(ctx).success(data)
+        // ctx.body = { success: true, msg: data.msg };
       } else {
         this.debug(data.msg + " createUser fail");
-        ctx.body = { success: false, msg: data.msg };
+        new ResponseManager(ctx).error("createUser fail", 500)
+        // ctx.body = { success: false, msg: data.msg };
       }
     });
 
-    // api admin
+    // api user
     this.router.post(this.api_v1 + "/get_key", authMiddleware, async (ctx, next) => {
       const args = ctx.request.body || {};
       const data = await checkKey(args, "get_key");
       this.debug(args);
       new ResponseManager(ctx).success(data)
-      // ctx.body = { success: true, msg: data };
     });
   }
 

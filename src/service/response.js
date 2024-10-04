@@ -5,7 +5,7 @@ class ResponseManager {
 
     success(data = null, message = null, status = 200) {
         this.ctx.status = status
-        this.ctx.body = {
+        return this.ctx.body = {
             status : "success",
             message : message,
             results : data,
@@ -14,7 +14,7 @@ class ResponseManager {
 
     error(message = null, status = 500) {
         this.ctx.status = status;
-        this.ctx.body = {
+        return this.ctx.body = {
             status: "error",
             message: message,
             results : null,
