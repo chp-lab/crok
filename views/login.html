@@ -35,7 +35,7 @@
 
 </html>
 
-<script>
+<!-- <script>
     const app = Vue.createApp({
         data() {
             return {
@@ -47,7 +47,7 @@
         methods: {
             login() {
                 try {
-                    axios.post('/api/v1/login', {
+                    axios.post('/api/v1/signin', {
                         username: this.username,
                         password: this.password
                     }).then((response) => {
@@ -119,4 +119,68 @@
         }
     })
     app.mount('#app')
+</script> -->
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                tunnel: "Login",
+                username: '',
+                password: ''
+            }
+        },
+        methods: {
+            login() {
+                try {
+                    axios.post('/api/v1/signin', {
+                        username: this.username,
+                        password: this.password
+                    }).then((response) => {
+                        const data = response.data;
+                        console.log(data);
+                        console.log(data.results.access_token);
+                        
+                        if (data.status == 'success') {
+                            // Store access_token and refresh_token in localStorage
+                            localStorage.setItem('access_token', data.results.access_token);
+                            localStorage.setItem('refresh_token', data.results.refresh_token);
+                            localStorage.setItem('fullname', data.results.user.fullname);
+                            localStorage.setItem('email', data.results.user.email);
+                            // Redirect to dashboard
+                            window.location.href = "/dashboard";
+                        } else {
+                            alert('Incorrect username or password.');
+                        }
+                    }).catch((error) => {
+                        console.log(error);
+                        alert('Error occurred during login.');
+                    });
+                } catch (error) {
+                    console.error('Error during login:', error);
+                    alert('An error occurred during login.');
+                }
+            },
+            // Function to check for access_token in localStorage
+            checkLogin() {
+                const accessToken = localStorage.getItem('access_token');
+                if (accessToken) {
+                    // If access_token exists, redirect to dashboard
+                    window.location.href = "/dashboard";
+                }
+            },
+            // Function to remove tokens from localStorage (for logout)
+            logout() {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                window.location.href = "/login";
+            }
+        },
+        mounted() {
+            // Check if already logged in
+            this.checkLogin();
+        }
+    });
+
+    app.mount('#app');
 </script>

@@ -49,10 +49,13 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="/auth_client">Your Authtoken Client</a>
-                          </li>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/monitor">Monitor VM</a>
+                        </li>
                     </ul>
                     <span class="navbar-text">
-                        <span class="navbar-text">User: {{ username }}</span>
+                        <span class="navbar-text">Admin : {{ username }}</span>
                     </span>
                     <span class="navbar-text">
                         <button @click="logout" class="btn btn-sm btn-danger ms-3">Logout</button>
@@ -93,7 +96,7 @@
                             <!-- <td>{{ con_sock(user.id) }}</td> -->
                             <td>{{ user.createdAt }}</td>
                             <td><button type="button" class="btn btn-sm btn-warning"
-                                    @click="removeClient(user.subdomain)">ลบ</button></td>
+                                    @click="removeClient(user.subdomain)">remove</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -107,7 +110,7 @@
 
 </html>
 
-<script>
+<!-- <script>
     const app = Vue.createApp({
         data() {
             return {
@@ -175,6 +178,99 @@
                 this.getClient(); // ดึงข้อมูล client
                 setInterval(() => {
                     this.getClient();
+                }, 5000);
+            }
+        }
+    });
+
+    app.mount('#app');
+</script> -->
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                tunnel: "Tunnel Dashboard",
+                data_client: [],
+                connected_socket: {},
+                username: '' // stores the logged-in username
+            }
+        },
+        methods: {
+            // Method to get clients, with token in Authorization header
+            getClient() {
+                const accessToken = localStorage.getItem('access_token');
+                axios.get('/api/v1/get_client_tunnel', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                })
+                    .then((response) => {
+                        // console.log(response.data.results.client_all);
+                        this.data_client = response.data.results.client_all;
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        if (error.response && error.response.status === 401) {
+                            this.logout(); // logout on unauthorized access
+                        }
+                    });
+            },
+            // Method to remove a client
+            removeClient(cl) {
+                const accessToken = localStorage.getItem('access_token');
+                if (confirm('Are you sure you want to delete this client ' + cl + ' ?')) {
+                    axios.delete('/api/v1/del_client/' + cl, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    })
+                        .then(() => {
+                            this.getClient(); // Refresh the client list
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                            if (error.response && error.response.status === 401) {
+                                this.logout(); // logout on unauthorized access
+                            }
+                        });
+                }
+            },
+            // Method to get socket connection status
+            con_sock(cl) {
+                const accessToken = localStorage.getItem('access_token');
+                let consock = 0;
+                axios.get('/api/tunnels/' + cl + '/status', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                })
+                    .then((response) => {
+                        consock = response.data.results.connected_sockets;
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        consock = 0;
+                        if (error.response && error.response.status === 401) {
+                            this.logout(); // logout on unauthorized access
+                        }
+                    });
+                return consock;
+            },
+            // Method to remove tokens and logout
+            logout() {
+                // Remove tokens from localStorage
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                // Redirect to login page
+                window.location.href = "/dashboard/login";
+            }
+        },
+        mounted() {
+            const accessToken = localStorage.getItem('access_token');
+            if (!accessToken) {
+                // If no token, redirect to login
+                window.location.href = "/dashboard/login";
+            } else {
+                // Display the username and fetch client data
+                this.username = localStorage.getItem('fullname'); // Fetch from localStorage
+                this.getClient(); // Fetch the client data
+                setInterval(() => {
+                    this.getClient(); // Refresh client data every 5 seconds
                 }, 5000);
             }
         }
