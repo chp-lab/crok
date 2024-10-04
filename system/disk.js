@@ -5,29 +5,33 @@ function getDisk() {
     exec("df -h", (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
-        return reject(error); // Reject Promise หากเกิดข้อผิดพลาด
+        return reject(error);
       }
 
       // แยกบรรทัด
       const lines = stdout.trim().split("\n");
-      console.log(">> ",lines)
-      // สร้าง array of objects
-      const diskInfo = lines.slice(1).map((line) => {
-        const columns = line.split(/\s+/);
-        console.log("line ",line);
-        console.log("columns ",columns);
-        
-        return {
-          filesystem: columns[0],
-          size: columns[1],
-          used: columns[2],
-          available: columns[3],
-          usePercent: columns[4],
-          mountedOn: columns[5],
-        };
-      });
 
-      resolve(diskInfo); // Resolve Promise กับข้อมูลดิสก์
+      // ใช้ Regular Expression เพื่อจับกลุ่มข้อมูลแต่ละคอลัมน์
+      const diskInfo = lines.slice(1).map((line) => {
+        // จับกลุ่มข้อมูลด้วย regex
+        const columns = line.match(/^(\S+\s\S+|\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)/);
+        
+        if (columns) {
+          return {
+            filesystem: columns[1],  // จับไฟล์ระบบหรือ mount point
+            size: columns[2],        // ขนาดทั้งหมด
+            used: columns[3],        // ใช้ไปแล้ว
+            available: columns[4],   // พื้นที่ว่าง
+            usePercent: columns[5],  // เปอร์เซ็นต์การใช้งาน
+            mountedOn: columns[6],   // ติดตั้งบน
+          };
+        } else {
+          console.error("Error parsing line:", line);
+          return null;
+        }
+      }).filter(Boolean); // กรองค่าที่เป็น null ออกไป
+
+      resolve(diskInfo);
     });
   });
 }
