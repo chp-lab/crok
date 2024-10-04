@@ -350,37 +350,44 @@ class ApiManagement {
   api_default() {
     this.router.get("/api/status", authMiddlewareAdmin, async (ctx, next) => {
       const stats = this.manager.stats;
-      fs.readFile('/proc/meminfo', 'utf8', (err, data) => {
+      const swap = {};
+      fs.readFile("/proc/meminfo", "utf8", (err, data) => {
         if (err) {
-          console.error('Error reading /proc/meminfo:', err);
-          return;
+          // console.error("Error reading /proc/meminfo:", err);
+          console.error("Error reading /proc/meminfo");
+          // return;
         }
-      
+
         // แยกบรรทัดต่าง ๆ
-        const lines = data.split('\n');
-      
-        // ค้นหาข้อมูลหน่วยความจำและ Swap
-        const memTotal = parseInt(lines.find(line => line.startsWith('MemTotal')).split(':')[1].trim().split(' ')[0], 10);
-        const memFree = parseInt(lines.find(line => line.startsWith('MemFree')).split(':')[1].trim().split(' ')[0], 10);
-        const buffers = parseInt(lines.find(line => line.startsWith('Buffers')).split(':')[1].trim().split(' ')[0], 10);
-        const cached = parseInt(lines.find(line => line.startsWith('Cached')).split(':')[1].trim().split(' ')[0], 10);
-        
-        const swapTotal = parseInt(lines.find(line => line.startsWith('SwapTotal')).split(':')[1].trim().split(' ')[0], 10);
-        const swapFree = parseInt(lines.find(line => line.startsWith('SwapFree')).split(':')[1].trim().split(' ')[0], 10);
-      
-        // คำนวณค่าที่คล้ายกับ free -h
-        const usedMem = memTotal - memFree - buffers - cached;
-        const usedSwap = swapTotal - swapFree;
-      
-        console.log("Total Memory:", (memTotal / 1024).toFixed(2), "MB");
-        console.log("Used Memory:", (usedMem / 1024).toFixed(2), "MB");
-        console.log("Free Memory:", (memFree / 1024).toFixed(2), "MB");
-        console.log("Buffers:", (buffers / 1024).toFixed(2), "MB");
-        console.log("Cached:", (cached / 1024).toFixed(2), "MB");
-      
-        console.log("Total Swap:", (swapTotal / 1024).toFixed(2), "MB");
-        console.log("Used Swap:", (usedSwap / 1024).toFixed(2), "MB");
-        console.log("Free Swap:", (swapFree / 1024).toFixed(2), "MB");
+        const lines = data.split("\n");
+
+        // ค้นหาบรรทัดที่มีข้อมูล Swap
+        const swapTotalLine = lines.find((line) =>
+          line.startsWith("SwapTotal")
+        );
+        const swapFreeLine = lines.find((line) => line.startsWith("SwapFree"));
+
+        if (swapTotalLine && swapFreeLine) {
+          // แปลงค่าที่ได้จากบรรทัดเป็นตัวเลขหน่วย KB
+          const swapTotal = parseInt(
+            swapTotalLine.split(":")[1].trim().split(" ")[0],
+            10
+          );
+          const swapFree = parseInt(
+            swapFreeLine.split(":")[1].trim().split(" ")[0],
+            10
+          );
+
+          // คำนวณ Swap ที่ใช้งานอยู่
+          const swapUsed = swapTotal - swapFree;
+          swap = {
+            total_swap: (swapTotal / (1024 * 1024)).toFixed(2),
+            free_swap: (swapFree / (1024 * 1024)).toFixed(2),
+            use_swap: (swapUsed / (1024 * 1024)).toFixed(2),
+          };
+        } else {
+          console.error("Swap information not found in /proc/meminfo");
+        }
       });
 
       const memoryUsage = process.memoryUsage();
@@ -412,6 +419,7 @@ class ApiManagement {
           mamfree: mamFree,
           mamuse: parseFloat((mamTotal - mamFree).toFixed(2)),
         },
+        swap: swap,
       };
       new ResponseManager(ctx).success(data, "Get monitor success.");
     });
