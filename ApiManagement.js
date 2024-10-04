@@ -350,7 +350,7 @@ class ApiManagement {
   api_default() {
     this.router.get("/api/status", authMiddlewareAdmin, async (ctx, next) => {
       const stats = this.manager.stats;
-      const swap = {};
+      var swap = {};
       fs.readFile("/proc/meminfo", "utf8", (err, data) => {
         if (err) {
           // console.error("Error reading /proc/meminfo:", err);
