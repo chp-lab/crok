@@ -20,6 +20,8 @@ import {
   createUser,
 } from "./src/controllers/UserController";
 
+import os from "os"
+
 class ApiManagement {
   constructor(router, manager) {
     this.router = router;
@@ -290,9 +292,25 @@ class ApiManagement {
   api_default() {
     this.router.get("/api/status", async (ctx, next) => {
       const stats = this.manager.stats;
+
+      const memoryUsage = process.memoryUsage();
+      const memoryInMB = {
+        rss: parseFloat((memoryUsage.rss / (1024 * 1024)).toFixed(2)),
+        heapTotal: parseFloat(
+          (memoryUsage.heapTotal / (1024 * 1024)).toFixed(2)
+        ),
+        heapUsed: parseFloat((memoryUsage.heapUsed / (1024 * 1024)).toFixed(2)),
+        external: parseFloat((memoryUsage.external / (1024 * 1024)).toFixed(2)),
+        arrayBuffers: parseFloat(
+          (memoryUsage.arrayBuffers / (1024 * 1024)).toFixed(2)
+        ),
+      };
       ctx.body = {
         tunnels: stats.tunnels,
-        mem: process.memoryUsage(),
+        mem: memoryInMB,
+        cpu: os.cpus(),
+        memtotal: parseFloat((os.totalmem() / (1024 * 1024 * 1024)).toFixed(2)),
+        mamfree: parseFloat((os.freemem() / (1024 * 1024 * 1024)).toFixed(2)),
       };
     });
 
