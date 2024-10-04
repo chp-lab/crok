@@ -388,6 +388,7 @@ class ApiManagement {
               free_swap: (swapFree / (1024 * 1024)).toFixed(2),
               use_swap: (swapUsed / (1024 * 1024)).toFixed(2),
             };
+            console.log(">>> ",swap);
           } else {
             console.error("Swap information not found in /proc/meminfo");
           }
