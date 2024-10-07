@@ -22,6 +22,9 @@ import {
 } from "./src/controllers/UserController";
 
 import os from "os";
+import { getDisk } from "./system/disk";
+import { getSwap } from "./system/swap";
+import { getMemory } from "./system/memory";
 
 class ApiManagement {
   constructor(router, manager) {
@@ -363,24 +366,26 @@ class ApiManagement {
           (memoryUsage.arrayBuffers / (1024 * 1024)).toFixed(2)
         ),
       };
+
+      const disk = await getDisk();
+      const swap = await getSwap();
+      const mem = getMemory();
       const cpus = os.cpus();
-      const mamTotal = parseFloat(
-        (os.totalmem() / (1024 * 1024 * 1024)).toFixed(2)
-      );
-      const mamFree = parseFloat(
-        (os.freemem() / (1024 * 1024 * 1024)).toFixed(2)
-      );
+
       const data = {
         tunnels: stats.tunnels,
         mem: memoryInMB,
         cpu: cpus,
         cpu_num_core: cpus.length,
         memory: {
-          memtotal: mamTotal,
-          mamfree: mamFree,
-          mamuse: parseFloat((mamTotal - mamFree).toFixed(2)),
+          memtotal: mem[0],
+          mamfree: mem[1],
+          mamuse: parseFloat((mem[0] - mem[1]).toFixed(2)),
         },
+        swap: swap,
+        disk: disk,
       };
+
       new ResponseManager(ctx).success(data, "Get monitor success.");
     });
 

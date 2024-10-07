@@ -58,7 +58,7 @@
               </li>
               <li class="nav-item bg-info-subtle">
                 <a class="nav-link active" aria-current="page" href="/monitor"
-                  >Monitor VM</a
+                  >System Info</a
                 >
               </li>
             </ul>
@@ -91,38 +91,96 @@
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="(cpu, index) in data_env.cpu"
-                :key="index" class="text-center">
+              <tr v-for="(c, index) in cpu" :key="index" class="text-center">
                 <th scope="row">{{ index + 1 }}</th>
                 <!-- <th scope="row"><i class="bi bi-cpu blinking-icon"></i></th> -->
-                <td>{{ cpu.model }}</td>
-                <td v-if="cpu.speed != 0">{{ cpu.speed/1000 }} Ghz</td>
+                <td>{{ c.model }}</td>
+                <td v-if="c.speed != 0">{{ c.speed/1000 }} Ghz</td>
                 <td v-else>-</td>
-                <td>{{ cpu.times }}</td>
+                <td>{{ c.times }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <div class="row">
-          <h4>RAM</h4>
+          <div class="col-6">
+            <h4>RAM</h4>
+            <table class="table table-bordered border-primary">
+              <thead>
+                <!-- <tr class="text-center">
+                  <th colspan="8">{{tunnel}}</th>
+                </tr> -->
+                <tr class="text-center">
+                  <th scope="col">Memory Total</th>
+                  <th scope="col">Memory Use</th>
+                  <th scope="col">Memory Free</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-center">
+                  <td>{{ memory.memtotal }} GB</td>
+                  <td>{{ memory.mamuse }} GB</td>
+                  <td>{{ memory.mamfree }} GB</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="col-6">
+            <h4>SWAP</h4>
+            <table class="table table-bordered border-primary">
+              <thead>
+                <!-- <tr class="text-center">
+                <th colspan="8">{{tunnel}}</th>
+              </tr> -->
+                <tr class="text-center">
+                  <th scope="col">Total</th>
+                  <th scope="col">Use</th>
+                  <th scope="col">Free</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-center">
+                  <td v-if="swap.total_swap">{{ swap.total_swap }} GB</td>
+                  <td v-else>-</td>
+                  <td v-if="swap.free_swap">{{ swap.free_swap }} GB</td>
+                  <td v-else>-</td>
+                  <td v-if="swap.use_swap">{{ swap.use_swap }} GB</td>
+                  <td v-else>-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="row">
+          <h4>Disk</h4>
           <table class="table table-bordered border-primary">
             <thead>
               <!-- <tr class="text-center">
                 <th colspan="8">{{tunnel}}</th>
               </tr> -->
               <tr class="text-center">
-                <th scope="col">Memory Total</th>
-                <th scope="col">Memory Use</th>
-                <th scope="col">Memory Free</th>
+                <th scope="col">no</th>
+                <th scope="col">Filesystem</th>
+                <th scope="col">Size</th>
+                <th scope="col">Used</th>
+                <th scope="col">Avail</th>
+                <th scope="col">Use%</th>
+                <th scope="col">Mounted</th>
               </tr>
             </thead>
             <tbody>
-              <tr class="text-center">
-                <td>{{ memory.memtotal }} GB</td>
-                <td>{{ memory.mamuse }} GB</td>
-                <td>{{ memory.mamfree }} GB</td>
+              <tr v-for="(d, index) in disk" :key="index" class="text-center">
+                <th scope="row">{{ index + 1 }}</th>
+                <!-- <th scope="row"><i class="bi bi-d blinking-icon"></i></th> -->
+                <td>{{ d.filesystem }}</td>
+                <td>{{d.size}}</td>
+                <td>{{ d.used }}</td>
+                <td>{{ d.available }}</td>
+                <td>{{ d.usePercent }}</td>
+                <td>{{ d.mountedOn }}</td>
               </tr>
             </tbody>
           </table>
@@ -156,7 +214,6 @@
             </tbody>
           </table>
         </div>
-
       </div>
     </div>
     <script
@@ -248,11 +305,13 @@
     data() {
       return {
         tunnel: "Tunnel Dashboard",
-        data_env: [],
+        cpu: [],
         cpu_core: 0,
-        tunnel:0,
-        memory:{},
-        memory_use_tunnel:{},
+        tunnel: 0,
+        memory: {},
+        memory_use_tunnel: {},
+        swap: {},
+        disk: [],
         connected_socket: {},
         username: "", // stores the logged-in username
       };
@@ -267,11 +326,13 @@
           })
           .then((response) => {
             console.log(response.data.results);
-            this.data_env = response.data.results;
-            this.cpu_core = response.data.results.cpu_num_core
-            this.memory = response.data.results.memory
-            this.tunnel = response.data.results.tunnels
-            this.memory_use_tunnel = response.data.results.mem
+            this.cpu = response.data.results.cpu;
+            this.cpu_core = response.data.results.cpu_num_core;
+            this.memory = response.data.results.memory;
+            this.tunnel = response.data.results.tunnels;
+            this.memory_use_tunnel = response.data.results.mem;
+            this.swap = response.data.results.swap;
+            this.disk = response.data.results.disk;
           })
           .catch((error) => {
             console.log(error);
