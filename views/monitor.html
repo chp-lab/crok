@@ -144,9 +144,9 @@
                 <tr class="text-center">
                   <td v-if="swap.total_swap">{{ swap.total_swap }} GB</td>
                   <td v-else>-</td>
-                  <td v-if="swap.free_swap">{{ swap.free_swap }} GB</td>
+                  <td v-if="swap.free_swap">{{ swap.use_swap }} GB</td>
                   <td v-else>-</td>
-                  <td v-if="swap.use_swap">{{ swap.use_swap }} GB</td>
+                  <td v-if="swap.use_swap">{{ swap.free_swap }} GB</td>
                   <td v-else>-</td>
                 </tr>
               </tbody>
