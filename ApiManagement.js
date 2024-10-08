@@ -466,7 +466,7 @@ class ApiManagement {
       if (args.sub_domain === "?new") {
         const reqId = hri.random();
         this.debug("-- สำหรับ server random subdomain มา --");
-        debug('making new client with id "%s"', reqId);
+        this.debug('making new client with id "%s"', reqId);
         const info = await this.manager.newClient(reqId);
 
         const url = schema + "://" + info.id + "." + ctx.request.host;

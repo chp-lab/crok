@@ -94,10 +94,8 @@
             <tbody>
               <tr
                 v-for="(user, index) in data_client"
-                :key="index"
-                class="text-center"
-              >
-                <th scope="row">{{ index + 1 }}</th>
+                :key="index">
+                <th scope="row" class="text-center">{{ index + 1 }}</th>
                 <td>{{ user.email }}</td>
                 <!-- <td>{{ con_sock(user.id) }}</td> -->
                 <td>
