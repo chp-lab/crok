@@ -386,6 +386,8 @@ class ApiManagement {
         disk: disk,
       };
 
+      // console.log(data);
+
       new ResponseManager(ctx).success(data, "Get monitor success.");
     });
 

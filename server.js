@@ -14,6 +14,7 @@ import path from 'path';
 // const dotenv = require('dotenv').config();
 // const debug = Debug('localtunnel:server');
 const ApiManagement = require('./ApiManagement');
+const System = require("./src/routes/system")
 
 import sequelize from "./src/db/database"
 import initModels from './src/model/MapModel';
@@ -52,6 +53,9 @@ export default function (opt) {
     api.api_default()
     api.client_connect(schema)
 
+    const apiSys = new System(router, manager);
+    apiSys.systemInfo()
+
     app.use(async (ctx, next) => {
         await next(); // เรียกใช้งาน Middleware ถัดไป        
         if (ctx.status === 404) {
@@ -71,7 +75,8 @@ export default function (opt) {
     try {
         initModels(sequelize)
         // sequelize.sync({ force: false });
-        sequelize.sync();
+        sequelize.sync({ alter: true });
+        console.log("Database Synced")
         // drop the table if it already exists
         // sequelize.sync({ force: true }).then(() => {
         //     console.log("Drop and re-sync db.");
