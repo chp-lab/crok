@@ -13,8 +13,8 @@ function initModels(sequelize) {
     User.hasMany(Linkuser, {foreignKey: "UserId", sourceKey: "id",})
     Linkuser.belongsTo(User, {foreignKey: "UserId",targetId: "id",});
 
-    User.hasMany(System, {foreignKey: "UserId", sourceKey: "id",})
-    System.belongsTo(User, {foreignKey: "UserId",targetId: "id",});
+    Linkuser.hasOne(System, {foreignKey: "LinkId", sourceKey: "id",})
+    System.belongsTo(Linkuser, {foreignKey: "LinkId",targetId: "id",});
 
     return {
         Admin,

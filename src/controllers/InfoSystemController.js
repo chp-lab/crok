@@ -1,19 +1,34 @@
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
-const { User, System } = initModels(sequelize);
+const { User, System, Linkuser, Op } = initModels(sequelize);
 
 async function updateInfo(body) {
+    // console.log(body);
+    
     var addSys
     try {
-        const findSys = await System.findOne({
+        const findlink = await Linkuser.findOne({
+          include : [
+            {
+              model : System,
+              required : false,
+              duplicating : false
+            }
+          ],
           where : {
-            UserId : body.user_id
+            [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
           }
         });
 
-        if (!findSys) {
+        // console.log(findlink);
+
+        if(!findlink) {
+          return
+        }
+        
+        if (!findlink.system) {
             addSys = await System.create({
-                UserId : body.user_id,
+                LinkId : findlink.id,
                 tunnels : body.tunnels,
                 mem: body.mem,
                 cpu: body.cpu,
@@ -33,7 +48,7 @@ async function updateInfo(body) {
                 disk: body.disk,
             },{
                 where : {
-                    UserId : body.user_id,
+                    LinkId : findlink.id
                 }
             })
         }
@@ -44,19 +59,20 @@ async function updateInfo(body) {
       }
 }
 
-async function getInfo(user_id) {
+async function getInfo(link_id) {
   try {
     const findSys = await System.findOne({
       where : {
-        UserId : user_id
+        LinkId : link_id
       }
     });
 
     if (!findSys) {
+      console.log("getInfo : not found.");
       return
     }
 
-    console.log(findSys.toJSON());
+    // console.log(findSys.toJSON());
 
     return findSys.toJSON()
   } catch (error) {
@@ -64,21 +80,31 @@ async function getInfo(user_id) {
   }
 }
 
-async function delInfo(user_id) {
+async function delInfo(body) {
   try {
-    const findSys = await System.findOne({
+    const findlink = await Linkuser.findOne({
+      include : [
+        {
+          model : System,
+          required : true,
+          duplicating : false
+        }
+      ],
       where : {
-        UserId : user_id
+        [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
       }
     });
 
-    if (!findSys) {
+    if (!findlink) {
       return
     }
 
+    // console.log(findlink.toJSON());
+    
+
     await System.destroy({
       where : {
-        UserId : user_id
+        LinkId : findlink.system.LinkId
       }
     });
 
@@ -88,4 +114,23 @@ async function delInfo(user_id) {
   }
 }
 
-module.exports = { updateInfo, getInfo, delInfo }
+async function pvUserLink(user_key) {
+  try {
+    const user = await User.findAll({
+      include: [
+        {
+          model: Linkuser,
+          required: true,
+        },
+      ],
+      where : {
+        userKey : user_key
+      }
+    });
+    return user;
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+module.exports = { updateInfo, getInfo, delInfo, pvUserLink }

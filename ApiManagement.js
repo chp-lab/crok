@@ -179,6 +179,7 @@ class ApiManagement {
         user_link.forEach((element) => {
           element.link_users.forEach((e) => {
             all.push({
+              link_id : e.id,
               name: element.name,
               userKey: element.userKey,
               subdomain: e.subdomain,
