@@ -15,6 +15,9 @@ export default (sequelize, Sequelize, DataTypes) => {
         url: {
           type: DataTypes.STRING,
         },
+        local_port : {
+          type: DataTypes.STRING,
+        }
       },
       {
         timestamps: true,

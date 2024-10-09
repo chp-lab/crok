@@ -16,17 +16,24 @@ async function updateInfo(body) {
             }
           ],
           where : {
-            [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
+            // [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
+            subdomain : body.subdomain
           }
         });
-
-        // console.log(findlink);
 
         if(!findlink) {
           return
         }
         
         if (!findlink.system) {
+            await Linkuser.update({
+              local_port : body.port
+            },{
+              where : {
+                id : findlink.id
+              }
+            })
+
             addSys = await System.create({
                 LinkId : findlink.id,
                 tunnels : body.tunnels,
@@ -38,6 +45,14 @@ async function updateInfo(body) {
                 disk: body.disk,
             })
         } else {
+            await Linkuser.update({
+              local_port : body.port
+            },{
+              where : {
+                id : findlink.id
+              }
+            })
+
             addSys = await System.update({
                 mem: body.mem,
                 tunnels : body.tunnels,
@@ -91,7 +106,8 @@ async function delInfo(body) {
         }
       ],
       where : {
-        [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
+        // [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
+        subdomain : body.subdomain
       }
     });
 

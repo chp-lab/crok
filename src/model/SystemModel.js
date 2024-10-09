@@ -6,12 +6,6 @@ export default (sequelize, Sequelize, DataTypes) => {
           primaryKey: true,
           autoIncrement: true,
         },
-        tunnels : {
-          type: DataTypes.INTEGER,
-        },
-        mem: {
-            type: DataTypes.JSON,
-        },
         cpu: {
             type: DataTypes.JSON,
         },
@@ -19,9 +13,6 @@ export default (sequelize, Sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
         },
         memory: {
-            type: DataTypes.JSON,
-        },
-        swap: {
             type: DataTypes.JSON,
         },
         disk: {

@@ -20,7 +20,7 @@ class System {
 
     systemInfo() {
         this.router.post(this.api_v1 + "/system/info", async (ctx, next) => {
-            const body = ctx.request.body
+            const body = ctx.request.body.data
             try {
                 const result = await manageSys.updateInfo(body);
 
@@ -42,7 +42,6 @@ class System {
         });
 
         this.router.get(this.api_v1 + "/system/info/:LinkId", authMiddleware, async (ctx, next) => {
-            console.log(ctx.params.LinkId);
             const link_id = ctx.params.LinkId
             try {
                 const result = await manageSys.getInfo(link_id);

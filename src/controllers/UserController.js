@@ -1,7 +1,7 @@
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
 import { randomAsciiString } from "../../generalFunction.js";
-const { User, Linkuser } = initModels(sequelize);
+const { User, Linkuser, System } = initModels(sequelize);
 
 async function getUserLink() {
   try {
@@ -132,6 +132,30 @@ async function checkKey(args, mode) {
 
 export async function deleteLinkUser(args) {
   // console.log(">>> ",args)
+  const findlink = await Linkuser.findOne({
+    include : [
+      {
+        model : System,
+        required : true,
+        duplicating : false
+      }
+    ],
+    where : {
+      // [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
+      subdomain : args
+    }
+  });
+
+  if (!findlink) {
+    return
+  }
+
+  await System.destroy({
+    where : {
+      LinkId : findlink.system.LinkId
+    }
+  });
+
   const deleteData = await Linkuser.destroy({
     where: {
       subdomain: args,
