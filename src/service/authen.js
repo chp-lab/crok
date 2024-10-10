@@ -94,7 +94,6 @@ async function getTokenAdmin (username, password) {
 
         const passwordMatch = await bcrypt.compare(password, admin.password);
         if (!passwordMatch) {
-            // new ResponseManager(ctx).error("Invalid credentials", 401)
             return 
         }
 
@@ -104,8 +103,6 @@ async function getTokenAdmin (username, password) {
         return { admin, access_token, refresh_token };
     } catch (error) {
         console.log("error message : ",error.message);
-        // new ResponseManager(ctx).error("Internal server error", 500)
-        // return
     }
 }
 
@@ -182,4 +179,12 @@ function jwtRefreshTokenGenerate (user,jwt_refresh_secret) {
     );
 }
 
-module.exports = { getToken, jwtRefreshTokenValidate, authMiddleware, getTokenAdmin, jwtRefreshTokenValidateAdmin, authMiddlewareAdmin, getNewTokenAdmin }
+module.exports = { 
+    getToken, 
+    jwtRefreshTokenValidate, 
+    authMiddleware, 
+    getTokenAdmin, 
+    jwtRefreshTokenValidateAdmin, 
+    authMiddlewareAdmin, 
+    getNewTokenAdmin,
+}

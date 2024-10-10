@@ -1,7 +1,7 @@
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
 import { randomAsciiString } from "../../generalFunction.js";
-const { User, Linkuser, System } = initModels(sequelize);
+const { User, Linkuser, System, LogSystem } = initModels(sequelize);
 
 async function getUserLink() {
   try {
@@ -151,6 +151,12 @@ export async function deleteLinkUser(args) {
   }
 
   await System.destroy({
+    where : {
+      LinkId : findlink.system.LinkId
+    }
+  });
+
+  await LogSystem.destroy({
     where : {
       LinkId : findlink.system.LinkId
     }

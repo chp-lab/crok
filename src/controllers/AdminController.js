@@ -1,8 +1,7 @@
 import sequelize from "../db/database.js"
 import initModels from "../model/MapModel.js"
 import bcrypt from "bcryptjs"
-
-const { User,Admin, Op } = initModels(sequelize)
+const { User,Admin, Op, Role} = initModels(sequelize)
 
 async function checkAdmin(username, email) {
     try {
@@ -19,10 +18,19 @@ async function checkAdmin(username, email) {
 }
 
 async function signupAdmin(body) {
-    const {username, password, email, fullname} = body
+    const {username, password, email, fullname, secret_key} = body
     try {
-        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        const role = await Role.findOne({
+            where : {
+                secret_key : secret_key
+            }
+        })
+
+        if(!role) {
+            return "Secret key has Invalid."
+        }
 
         const admin = await Admin.findOne({
             where : {
@@ -35,10 +43,11 @@ async function signupAdmin(body) {
                 username,
                 password: hashedPassword,
                 fullname,
-                email
+                email,
+                RoleId : role.id
             });
         } else {
-            return 
+            return "This username or email has already exist."
         }
     
         return newUser

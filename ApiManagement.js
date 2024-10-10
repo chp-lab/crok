@@ -258,7 +258,7 @@ class ApiManagement {
         !body.confirm_password
       ) {
         new ResponseManager(ctx).error(
-          "Username, password, confirm_password, email or fullname are required",
+          "username, password, confirm_password, email or fullname are required",
           400
         );
         return;
@@ -275,9 +275,9 @@ class ApiManagement {
       try {
         const signup = await signupAdmin(body);
 
-        if (!signup) {
+        if (typeof signup == "string") {
           new ResponseManager(ctx).error(
-            "email or username is dubplicate.",
+            signup,
             400
           );
           return;

@@ -1,6 +1,6 @@
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
-const { User, System, Linkuser, Op } = initModels(sequelize);
+const { User, System, Linkuser, LogSystem, Op } = initModels(sequelize);
 
 async function updateInfo(body) {
     // console.log(body);
@@ -36,12 +36,17 @@ async function updateInfo(body) {
 
             addSys = await System.create({
                 LinkId : findlink.id,
-                tunnels : body.tunnels,
-                mem: body.mem,
                 cpu: body.cpu,
                 cpu_num_core: body.cpu_num_core,
                 memory: body.memory,
-                swap: body.swap,
+                disk: body.disk,
+            })
+
+            await LogSystem.create({
+              LinkId : findlink.id,
+                cpu: body.cpu,
+                cpu_num_core: body.cpu_num_core,
+                memory: body.memory,
                 disk: body.disk,
             })
         } else {
@@ -54,17 +59,22 @@ async function updateInfo(body) {
             })
 
             addSys = await System.update({
-                mem: body.mem,
-                tunnels : body.tunnels,
                 cpu: body.cpu,
                 cpu_num_core: body.cpu_num_core,
                 memory: body.memory,
-                swap: body.swap,
                 disk: body.disk,
             },{
                 where : {
                     LinkId : findlink.id
                 }
+            })
+
+            await LogSystem.create({
+              LinkId : findlink.id,
+                cpu: body.cpu,
+                cpu_num_core: body.cpu_num_core,
+                memory: body.memory,
+                disk: body.disk,
             })
         }
 
@@ -90,6 +100,28 @@ async function getInfo(link_id) {
     // console.log(findSys.toJSON());
 
     return findSys.toJSON()
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+async function getLogInfo(link_id) {
+  try {
+    const findSys = await LogSystem.findAll({
+      attributes : ['cpu','cpu_num_core','memory','disk'],
+      where : {
+        LinkId : link_id
+      }
+    });
+
+    if (!findSys) {
+      console.log("getInfo : not found.");
+      return
+    }
+
+    // console.log(findSys.toJSON());
+
+    return findSys
   } catch (error) {
     console.log(error.message);
   }
@@ -149,4 +181,4 @@ async function pvUserLink(user_key) {
   }
 }
 
-module.exports = { updateInfo, getInfo, delInfo, pvUserLink }
+module.exports = { updateInfo, getInfo, delInfo, pvUserLink, getLogInfo }

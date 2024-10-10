@@ -52,16 +52,40 @@ class System {
                 }
 
                 let data = {
-                    tunnels: result.tunnels,
-                    mem: result.mem,
                     cpu: result.cpu,
                     cpu_num_core: result.cpu_num_core,
                     memory: result.memory,
-                    swap: result.swap,
                     disk: result.disk,
                 }
 
                 new ResponseManager(ctx).success(data);
+            } catch (error) {
+                console.error("Authentication error:", error.message);
+                new ResponseManager(ctx).error(
+                    "Internal server error.",
+                    500
+                );
+            }
+        });
+
+        this.router.get(this.api_v1 + "/logsystem/info/:LinkId", authMiddleware, async (ctx, next) => {
+            const link_id = ctx.params.LinkId
+            try {
+                const result = await manageSys.getLogInfo(link_id);
+
+                if (!result) {
+                    new ResponseManager(ctx).error("System info not found.", 404);
+                    return
+                }
+
+                // let data = {
+                //     cpu: result.cpu,
+                //     cpu_num_core: result.cpu_num_core,
+                //     memory: result.memory,
+                //     disk: result.disk,
+                // }
+
+                new ResponseManager(ctx).success(result);
             } catch (error) {
                 console.error("Authentication error:", error.message);
                 new ResponseManager(ctx).error(
