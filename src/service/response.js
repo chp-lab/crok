@@ -9,6 +9,7 @@ class ResponseManager {
             status : "success",
             message : message,
             results : data,
+            length : data.length
         }
     }
 
@@ -18,6 +19,7 @@ class ResponseManager {
             status: "error",
             message: message,
             results : null,
+            length : 0
         };
     }
 }
