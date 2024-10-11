@@ -413,6 +413,7 @@ class ApiManagement {
       const args = ctx.request.body || {};
       console.log("req:");
       console.log(args);
+      
       const check_key = await checkKey(args.user, "check_key");
       if (check_key == null) {
         this.debug("client token key not found");
@@ -422,7 +423,19 @@ class ApiManagement {
           result: false,
         };
         return;
-      }
+      } 
+
+      const check_url = await checkKey(args.user, "check_url");      
+      if (check_url != null) {
+        this.debug("This token already has a link.");
+        ctx.status = 200;
+        ctx.body = {
+          message: "This token already has a link.",
+          result: false,
+        };
+        return;
+      } 
+
       if (args.sub_domain !== "?new") {
         const reqId = args.sub_domain;
         // limit requested hostnames to 63 characters

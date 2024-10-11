@@ -1,6 +1,7 @@
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
 import { randomAsciiString } from "../../generalFunction.js";
+import { user } from "pg/lib/defaults.js";
 const { User, Linkuser, System, LogSystem } = initModels(sequelize);
 
 async function getUserLink() {
@@ -125,6 +126,33 @@ async function checkKey(args, mode) {
           email: args.email,
         },
       });
+      return userkeycheck;
+    }
+
+    if (mode == "check_url") {
+      const userkeycheck = await User.findOne({
+        include : [
+          {
+            model : Linkuser,
+            required : true,
+          }
+        ],
+        where: {
+          userKey: args.userKey,
+        },
+      });
+
+      // console.log(userkeycheck.toJSON());
+      // console.log(userkeycheck.toJSON().link_available, "<", userkeycheck.toJSON().link_users.length);
+
+      let link_available = userkeycheck.toJSON().link_available
+      let num_link = userkeycheck.toJSON().link_users.length
+
+      // console.log(link_available < num_link);
+
+      if(num_link < link_available) {
+        return null
+      }
       return userkeycheck;
     }
   } catch (error) {}

@@ -15,6 +15,10 @@ export default (sequelize, Sequelize, DataTypes) => {
         userKey: {
           type: DataTypes.STRING,
         },
+        link_available: {
+          type: DataTypes.INTEGER,
+          defaultValue: 1,
+        }
       },
       {
         timestamps: true,

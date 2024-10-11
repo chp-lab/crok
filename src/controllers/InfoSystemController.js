@@ -16,7 +16,6 @@ async function updateInfo(body) {
             }
           ],
           where : {
-            // [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
             subdomain : body.subdomain
           }
         });
@@ -43,7 +42,7 @@ async function updateInfo(body) {
             })
 
             await LogSystem.create({
-              LinkId : findlink.id,
+                LinkId : findlink.id,
                 cpu: body.cpu,
                 cpu_num_core: body.cpu_num_core,
                 memory: body.memory,
@@ -138,7 +137,6 @@ async function delInfo(body) {
         }
       ],
       where : {
-        // [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
         subdomain : body.subdomain
       }
     });
@@ -147,12 +145,15 @@ async function delInfo(body) {
       return
     }
 
-    // console.log(findlink.toJSON());
-    
-
     await System.destroy({
       where : {
         LinkId : findlink.system.LinkId
+      }
+    });
+
+    await Linkuser.destroy({
+      where : {
+        subdomain : body.subdomain
       }
     });
 
