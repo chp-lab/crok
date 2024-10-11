@@ -210,10 +210,29 @@ export function emptyTable() {
     force: true, // ถ้าคุณเปิดใช้ soft delete (paranoid), force จะทำการลบจริง ๆ
   });
 }
+
+async function editAvailableLink(user_key, numb) {
+  try {
+    await User.update({
+      link_available : numb
+    },{
+      where : {
+        userKey : user_key
+      }
+    });
+
+    return
+  } catch (error) {
+    console.log("editAvailableLink : ",error.message);
+    
+  }
+}
+
 module.exports = {
   getUserLink,
   createUser,
   getAllUser,
   checkKey,
   addUserLink,
+  editAvailableLink
 };

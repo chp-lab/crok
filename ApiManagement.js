@@ -19,6 +19,7 @@ import {
   getAllUser,
   checkKey,
   createUser,
+  editAvailableLink
 } from "./src/controllers/UserController";
 
 import os from "os";
@@ -164,6 +165,24 @@ class ApiManagement {
         ctx.body = "Error getAllUser";
       }
     });
+
+    this.router.put(this.api_v1 + "/edit/link_available", authMiddlewareAdmin, async (ctx, next) => {
+      let userKey = ctx.request.body.userKey
+      let numb = ctx.request.body.number
+
+      if (numb > 3) {
+        new ResponseManager(ctx).error("number must less than or equal to 3.", 400);
+        return
+      }
+
+      try {
+        await editAvailableLink(userKey, numb);
+        new ResponseManager(ctx).success(null, "Edit link available success.");
+      } catch (err) {
+        this.debug(err.message + " Update link available fail");
+        new ResponseManager(ctx).error("Update link available fail", 500);
+      }
+    })
   }
 
   newApi() {
@@ -427,7 +446,7 @@ class ApiManagement {
 
       const check_url = await checkKey(args.user, "check_url");      
       if (check_url != null) {
-        this.debug("This token already has a link.");
+        this.debug("This token over limite.");
         ctx.status = 200;
         ctx.body = {
           message: "This token already has a link.",
