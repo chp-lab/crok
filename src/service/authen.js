@@ -3,8 +3,9 @@ import initModels from "../model/MapModel.js";
 import { randomAsciiString } from "../../generalFunction.js";
 import ResponseManager from "../service/response.js"
 import bcrypt from "bcryptjs"
+// import UserPackage from "../model/UserPackage.js";
 
-const { User, Linkuser, Op, Admin } = initModels(sequelize);
+const { User, Linkuser, Op, Admin, UserPackage } = initModels(sequelize);
 const jwt = require("jsonwebtoken")
 const util = require("util");
 
@@ -31,6 +32,10 @@ async function getToken (body) {
                 email: body.email,
                 name: body.name,
                 userKey: randomAsciiString(),
+            })
+
+            await UserPackage.create({
+                UserId : user.id
             })
         }
 

@@ -10,10 +10,10 @@ export default (sequelize, Sequelize, DataTypes) => {
             type: DataTypes.STRING,
             defaultValue: null,
         },
-        // link_available: {
-        //   type: DataTypes.INTEGER,
-        //   defaultValue: 1,
-        // },
+        link_available: {
+          type: DataTypes.INTEGER,
+          defaultValue: 1,
+        },
         limit_mem: {
           type: DataTypes.FLOAT,
           defaultValue: 1024*1024*1024,

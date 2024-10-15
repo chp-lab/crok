@@ -177,7 +177,12 @@ class ApiManagement {
       }
 
       try {
-        await editAvailableLink(userKey, numb);
+        const editAv = await editAvailableLink(userKey, numb);
+        if(!editAv) {
+          new ResponseManager(ctx).error("User from userKey not found.", 400);
+          return
+        }
+
         new ResponseManager(ctx).success(null, "Edit link available success.");
       } catch (err) {
         this.debug(err.message + " Update link available fail");
@@ -272,7 +277,7 @@ class ApiManagement {
       jwtRefreshTokenValidateAdmin,
       async (ctx, next) => {
         const args = ctx.state.admin || {};
-        this.debug(args);
+        // this.debug(args);
         const { email } = args;
         try {
           const user_con = await getNewTokenAdmin(email);
@@ -399,7 +404,7 @@ class ApiManagement {
       async (ctx, next) => {
         const args = ctx.request.body || {};
         const data = await checkKey(args, "get_key");
-        this.debug(args);
+        // this.debug(args);
         new ResponseManager(ctx).success(data);
       }
     );

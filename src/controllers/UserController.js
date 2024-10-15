@@ -22,7 +22,16 @@ async function getUserLink() {
 
 async function getAllUser() {
   try {
-    const user = await User.findAll();
+    const user = await User.findAll({
+      include : [
+        {
+          model : UserPackage
+        },
+      ]
+    });
+    
+    // console.log(user[0].user_package.link_available);
+    
     return user;
   } catch (error) {
     console.log(error.message);
@@ -40,37 +49,6 @@ async function createUser(args) {
   if (usercheck !== null) {
     console.log("user เดิม");
     return { success: false, msg: "already" };
-
-    // const linkusercheck = await Linkuser.findOne({
-    //   where: {
-    //     subdomain: args.id,
-    //   },
-    // });
-    // console.log(">>>> ", linkusercheck);
-
-    // if (linkusercheck !== null) {
-    //   await Linkuser.update(
-    //     {
-    //       subdomain: args.id,
-    //       tcp_port: args.port,
-    //       url: args.url,
-    //       UserId: usercheck.id,
-    //     },
-    //     {
-    //       where: { id: linkusercheck.id },
-    //     }
-    //   );
-    // } else {
-    //   const linkuser = await Linkuser.create({
-    //     subdomain: args.id,
-    //     tcp_port: args.port,
-    //     url: args.url,
-    //     UserId: usercheck.id,
-    //   });
-    //   if (!linkuser) {
-    //     console.log("create Linkuser fail");
-    //   }
-    // }
   } else {
     console.log("user ใหม่");
     const user = await User.create({
@@ -83,15 +61,6 @@ async function createUser(args) {
     }
     console.log(user.userKey);
     return { success: true, msg: user.userKey };
-    // const linkuser = await Linkuser.create({
-    //   subdomain: args.id,
-    //   tcp_port: args.port,
-    //   url: args.url,
-    //   UserId: user.id,
-    // });
-    // if (!linkuser) {
-    //   console.log("create Linkuser fail");
-    // }
   }
 }
 
@@ -108,11 +77,15 @@ async function addUserLink(args, user_id) {
       console.log("create Linkuser fail");
     }
 
-    await UserPackage.create({
-      package : "default",
-      limit_mem : 1024*1024*1024,
-      usage_mem : 0
-    })
+    // await UserPackage.update({
+    //   package : "default",
+    //   limit_mem : 1024*1024*1024,
+    //   usage_mem : 0
+    // },{
+    //   where : {
+    //     UserId: user_id,
+    //   }
+    // })
 
   } catch (error) {}
 }
@@ -143,6 +116,9 @@ async function checkKey(args, mode) {
           {
             model : Linkuser,
             required : true,
+          },{
+            model : UserPackage,
+            required : true,
           }
         ],
         where: {
@@ -153,9 +129,10 @@ async function checkKey(args, mode) {
       // console.log(userkeycheck.toJSON());
       // console.log(userkeycheck.toJSON().link_available, "<", userkeycheck.toJSON().link_users.length);
 
-      let link_available = userkeycheck.toJSON().link_available
+      let link_available = userkeycheck.toJSON().user_package.link_available
       let num_link = userkeycheck.toJSON().link_users.length
-
+      
+      // console.log("link_available ",link_available);
       // console.log(link_available < num_link);
 
       if(num_link < link_available) {
@@ -221,15 +198,25 @@ export function emptyTable() {
 
 async function editAvailableLink(user_key, numb) {
   try {
-    await User.update({
-      link_available : numb
-    },{
+    const findId = await User.findOne({
       where : {
         userKey : user_key
       }
+    })
+
+    if(!findId) {
+      return
+    }
+
+    await UserPackage.update({
+      link_available : numb
+    },{
+      where : {
+        UserId : findId.id
+      }
     });
 
-    return
+    return findId
   } catch (error) {
     console.log("editAvailableLink : ",error.message);
     
@@ -251,8 +238,8 @@ async function findMemUser(user_key) {
       }
     });
 
-    console.log(find_mem.toJSON());
-    console.log(find_mem.toJSON().user_package);
+    // console.log(find_mem.toJSON());
+    // console.log(find_mem.toJSON().user_package);
     
     if(!find_mem) {
       return 

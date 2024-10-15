@@ -114,12 +114,12 @@
                       max="3"
                       min="1"
                       class="form-control"
-                      v-model="user.link_available"
+                      v-model="user.user_package.link_available"
                     />
                     <button
                       type="button"
                       class="btn btn-sm btn-warning"
-                      @click="editLimit(user.userKey, user.link_available)"
+                      @click="editLimit(user.userKey, user_package.link_available)"
                     >
                       edit
                     </button>
