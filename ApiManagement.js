@@ -19,7 +19,8 @@ import {
   getAllUser,
   checkKey,
   createUser,
-  editAvailableLink
+  editAvailableLink,
+  findMemUser,updateMemUser
 } from "./src/controllers/UserController";
 
 import os from "os";
@@ -181,6 +182,41 @@ class ApiManagement {
       } catch (err) {
         this.debug(err.message + " Update link available fail");
         new ResponseManager(ctx).error("Update link available fail", 500);
+      }
+    })
+
+    this.router.get(this.api_v1 + "/get/memmory/:userKey", async (ctx, next) => {
+      let userKey = ctx.params.userKey
+      try {
+        const find_mem = await findMemUser(userKey);
+
+        if(!find_mem) {
+          new ResponseManager(ctx).error("Invalid userkey", 404);
+          return;
+        }
+
+        new ResponseManager(ctx).success(find_mem);
+      } catch (err) {
+        this.debug(err.message + "get usage memory fail");
+        new ResponseManager(ctx).error("get usage memory fail", 500);
+      }
+    })
+
+    this.router.put(this.api_v1 + "/get/memmory", async (ctx, next) => {
+      let userKey = ctx.request.body.userKey
+      let usage_mem = ctx.request.body.usage_mem
+      try {
+        const find_mem = await updateMemUser(userKey, usage_mem);
+
+        if(!find_mem) {
+          new ResponseManager(ctx).error("Invalid userkey", 404);
+          return;
+        }
+
+        new ResponseManager(ctx).success(null,"update usage memmory success.");
+      } catch (err) {
+        this.debug(err.message + "update usage memory fail");
+        new ResponseManager(ctx).error("update usage memory fail", 500);
       }
     })
   }
@@ -449,7 +485,7 @@ class ApiManagement {
         this.debug("This token over limite.");
         ctx.status = 200;
         ctx.body = {
-          message: "This token already has a link.",
+          message: "This token over limite.",
           result: false,
         };
         return;

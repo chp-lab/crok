@@ -139,65 +139,6 @@
   </body>
 </html>
 
-<!-- <script>
-  const app = Vue.createApp({
-    data() {
-      return {
-        tunnel: "Tunnel Auth Token",
-        data_client: [],
-        connected_socket: {},
-        username: "", // เก็บชื่อผู้ใช้ที่ล็อกอินเข้ามา
-      };
-    },
-    methods: {
-      getClient() {
-        axios
-          .get("/api/v1/get_user_all")
-          .then((response) => {
-            this.data_client = response.data;
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-      },
-      copyToClipboard(text) {
-        
-        // alert(text )
-      },
-      getCookie(name) {
-        let nameEQ = name + "=";
-        let ca = document.cookie.split(";");
-        for (let i = 0; i < ca.length; i++) {
-          let c = ca[i];
-          while (c.charAt(0) === " ") c = c.substring(1, c.length);
-          if (c.indexOf(nameEQ) === 0)
-            return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-      },
-      logout() {
-        // ลบ cookie และ redirect ไปยังหน้า login
-        document.cookie = "username=; Max-Age=-99999999;";
-        window.location.href = "/dashboard/login";
-      },
-    },
-    mounted() {
-      const username = this.getCookie("username");
-      if (!username) {
-        window.location.href = "/dashboard/login"; // ถ้ายังไม่ได้ล็อกอินให้ redirect ไปหน้า login
-      } else {
-        this.username = username; // แสดง username ใน Navbar
-        this.getClient(); // ดึงข้อมูล client
-        setInterval(() => {
-          this.getClient();
-        }, 5000);
-      }
-    },
-  });
-
-  app.mount("#app");
-</script> -->
-
 <script>
   const app = Vue.createApp({
     data() {

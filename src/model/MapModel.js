@@ -5,6 +5,7 @@ import _linkuser from "./LinkUserModel.js"
 import _system from "./SystemModel.js"
 import _role from "./RoleAdmin.js"
 import _logsystem from "./LogSystem.js"
+import _userpackage from "./UserPackage.js"
 
 function initModels(sequelize) {
     var Admin = _admin(sequelize, Sequelize, DataTypes);
@@ -13,6 +14,7 @@ function initModels(sequelize) {
     var System = _system(sequelize, Sequelize, DataTypes);
     var Role = _role(sequelize, Sequelize, DataTypes);
     var LogSystem = _logsystem(sequelize, Sequelize, DataTypes);
+    var UserPackage = _userpackage(sequelize, Sequelize, DataTypes);
 
     User.hasMany(Linkuser, {foreignKey: "UserId", sourceKey: "id",})
     Linkuser.belongsTo(User, {foreignKey: "UserId",targetId: "id",});
@@ -29,6 +31,9 @@ function initModels(sequelize) {
     Role.hasMany(User, {foreignKey: "RoleId", sourceKey: "id",})
     User.belongsTo(Role, {foreignKey: "RoleId",targetId: "id",});
 
+    User.hasOne(UserPackage, {foreignKey: "UserId", sourceKey: "id",})
+    UserPackage.belongsTo(User, {foreignKey: "UserId",targetId: "id",});
+
     return {
         Admin,
         User,
@@ -36,7 +41,8 @@ function initModels(sequelize) {
         Op,
         System,
         LogSystem,
-        Role
+        Role,
+        UserPackage
     }
 }
 

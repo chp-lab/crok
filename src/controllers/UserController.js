@@ -2,7 +2,7 @@ import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
 import { randomAsciiString } from "../../generalFunction.js";
 import { user } from "pg/lib/defaults.js";
-const { User, Linkuser, System, LogSystem } = initModels(sequelize);
+const { User, Linkuser, System, LogSystem, UserPackage } = initModels(sequelize);
 
 async function getUserLink() {
   try {
@@ -103,9 +103,17 @@ async function addUserLink(args, user_id) {
       url: args.url,
       UserId: user_id,
     });
+
     if (!linkuser) {
       console.log("create Linkuser fail");
     }
+
+    await UserPackage.create({
+      package : "default",
+      limit_mem : 1024*1024*1024,
+      usage_mem : 0
+    })
+
   } catch (error) {}
 }
 
@@ -228,11 +236,64 @@ async function editAvailableLink(user_key, numb) {
   }
 }
 
+async function findMemUser(user_key) {
+  try {
+    const find_mem = await User.findOne({
+      include : [
+        {
+          model : UserPackage,
+          required : true,
+          attributes : ['UserId','limit_mem','usage_mem',]
+        }
+      ],
+      where : {
+        userKey : user_key
+      }
+    });
+
+    console.log(find_mem.toJSON());
+    console.log(find_mem.toJSON().user_package);
+    
+    if(!find_mem) {
+      return 
+    }
+
+    return find_mem.toJSON().user_package
+  } catch (error) {
+    console.log("findMemUser : ",error.message);
+  }
+}
+
+async function updateMemUser(user_key, usage_mem) {
+  try {
+    const find_mem = await User.findOne({
+      where : {
+        userKey : user_key
+      }
+    });
+    
+    if(!find_mem) {
+      return 
+    }
+
+    await UserPackage.update({ usage_mem : usage_mem },{
+      where : {
+        UserId : find_mem.id
+      }
+    })
+
+    return find_mem.toJSON()
+  } catch (error) {
+    console.log("updateMemUser : ",error.message);
+  }
+}
+
 module.exports = {
   getUserLink,
   createUser,
   getAllUser,
   checkKey,
   addUserLink,
-  editAvailableLink
+  editAvailableLink,
+  findMemUser,updateMemUser
 };

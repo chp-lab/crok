@@ -18,7 +18,7 @@ export default (sequelize, Sequelize, DataTypes) => {
         link_available: {
           type: DataTypes.INTEGER,
           defaultValue: 1,
-        }
+        },
       },
       {
         timestamps: true,
