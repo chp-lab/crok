@@ -17,6 +17,9 @@ export default (sequelize, Sequelize, DataTypes) => {
         },
         local_port : {
           type: DataTypes.STRING,
+        },
+        ssh_port : {
+          type: DataTypes.STRING,
         }
       },
       {

@@ -543,6 +543,7 @@ class ApiManagement {
         }
         const url = schema + "://" + info.id + "." + ctx.request.host;
         info.url = url;
+        info.ssh_port = args.user.ssh_port
         ctx.body = info;
         this.debug("-- url ที่ส่งไปยัง client ใช้งาน ", url);
         // clients_url = clients_url.filter(client => client.id !== info.id);
@@ -563,6 +564,7 @@ class ApiManagement {
 
         const url = schema + "://" + info.id + "." + ctx.request.host;
         info.url = url;
+        info.ssh_port = args.user.ssh_port
         ctx.body = info;
         console.log("res:");
         console.log(info);

@@ -71,6 +71,7 @@ async function addUserLink(args, user_id) {
       tcp_port: args.port,
       url: args.url,
       UserId: user_id,
+      ssh_port:args.ssh_port
     });
 
     if (!linkuser) {

@@ -15,6 +15,7 @@ import path from 'path';
 // const debug = Debug('localtunnel:server');
 const ApiManagement = require('./ApiManagement');
 const System = require("./src/routes/system")
+const Ssh = require("./src/routes/ssh")
 
 import sequelize from "./src/db/database"
 import initModels from './src/model/MapModel';
@@ -55,6 +56,9 @@ export default function (opt) {
 
     const apiSys = new System(router, manager);
     apiSys.systemInfo()
+
+    const apiSsh = new Ssh(router, manager);
+    apiSsh.sshInfo()
 
     app.use(async (ctx, next) => {
         await next(); // เรียกใช้งาน Middleware ถัดไป        
