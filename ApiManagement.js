@@ -408,6 +408,22 @@ class ApiManagement {
         new ResponseManager(ctx).success(data);
       }
     );
+
+    this.router.delete(
+      this.api_v1 + "/user/del_client/:client",
+      authMiddleware,
+      async (ctx, next) => {
+        const clientId = ctx.params.client;
+        try {
+          this.manager.removeClient(clientId);
+          this.debug(clientId);
+          new ResponseManager(ctx).success(clientId, "Delete success.");
+        } catch(error) {
+          console.error("delete fail", error.message);
+          new ResponseManager(ctx).error("delete fail", 500);
+        }
+      }
+    );
   }
 
   // api default
