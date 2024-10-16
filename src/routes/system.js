@@ -53,6 +53,8 @@ class System {
 
                 let data = {
                     cpu: result.cpu,
+                    cpu_inuse : result.cpu_inuse,
+                    cpu_available : result.cpu_available,
                     cpu_num_core: result.cpu_num_core,
                     memory: result.memory,
                     disk: result.disk,
