@@ -18,6 +18,14 @@ export default (sequelize, Sequelize, DataTypes) => {
         disk: {
             type: DataTypes.JSON,
         },
+        cpu_inuse : {
+          default : null,
+          type: DataTypes.FLOAT,
+        },
+        cpu_available : {
+          default : null,
+          type: DataTypes.FLOAT,
+        }
       },
       {
         timestamps: true,
