@@ -27,6 +27,7 @@ import os from "os";
 import { getDisk } from "./system/disk";
 import { getSwap } from "./system/swap";
 import { getMemory } from "./system/memory";
+import {verifyTwofactor} from "./system/verify_2fa"
 
 class ApiManagement {
   constructor(router, manager) {
@@ -134,6 +135,19 @@ class ApiManagement {
     this.router.get("/dashboard/login", async (ctx, next) => {
       try {
         const filePath = path.join(__dirname, "views", "login.html");
+        const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
+
+        ctx.type = "html"; // กำหนด type เป็น HTML
+        ctx.body = html; // ส่งไฟล์ HTML ไปยัง body
+      } catch (err) {
+        ctx.status = 500;
+        ctx.body = "Error loading the page";
+      }
+    });
+    
+    this.router.get("/register", async (ctx, next) => {
+      try {
+        const filePath = path.join(__dirname, "views", "register.html");
         const html = await fs.promises.readFile(filePath, "utf-8"); // อ่านไฟล์ HTML
 
         ctx.type = "html"; // กำหนด type เป็น HTML
@@ -343,7 +357,7 @@ class ApiManagement {
           return;
         }
 
-        new ResponseManager(ctx).success(null, "Signup new admin success.");
+        new ResponseManager(ctx).success(signup.auth_2fa, "Signup new admin success.");
       } catch (error) {
         console.error("Signup fail", error.message);
         new ResponseManager(ctx).error("Signup fail", 500);
@@ -380,6 +394,21 @@ class ApiManagement {
         new ResponseManager(ctx).error("login fail", 500);
       }
     });
+
+    this.router.post(this.api_v1 + "/2fa", async (ctx, next) => {
+      const args = ctx.request.body || {};
+      // console.log(args);
+      const check_auth_2fa = args.auth_2fa
+      const secret = await checkAdmin(args.email);
+
+      const auth_2fa = verifyTwofactor(secret.auth_2fa)
+
+      if(auth_2fa === check_auth_2fa){
+        new ResponseManager(ctx).success(args, "2fa verify successfully");
+      }else{
+        new ResponseManager(ctx).error("2fa verify fail", 400);
+      }
+    })
 
     // api create user (ใช้เส้น /auth/login แทน)
     this.router.post(this.api_v1 + "/create_client", async (ctx, next) => {

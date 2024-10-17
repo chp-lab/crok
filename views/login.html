@@ -14,8 +14,8 @@
 
 <body>
     <div id="app" class="d-flex justify-content-center align-items-center vh-100">
-        <div class="card p-4 shadow-lg" style="width: 400px;">
-            <h2 class="text-center mb-4">{{tunnel}}</h2>
+        <div class="card p-4 shadow-lg" style="width: 400px;"  v-if="login_mode">
+            <h2 class="text-center mb-4">{{login_auth}}</h2>
             <form @submit.prevent="login">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
@@ -30,6 +30,19 @@
                 </div>
             </form>
         </div>
+
+        <div class="card p-4 shadow-lg" style="width: 400px;" v-if = "!login_mode">
+            <h3 class="text-center mb-4">{{two_fa_auth}}</h3>
+            <form @submit.prevent="verify_2fa">
+                <div class="mb-3">
+                    <label for="two_fa" class="form-label">2FA Code</label>
+                    <input type="text" class="form-control" id="two_fa" v-model="two_fa" required>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Verify</button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 
@@ -39,9 +52,13 @@
     const app = Vue.createApp({
         data() {
             return {
-                tunnel: "Login",
+                login_auth: "Login",
+                two_fa_auth: "Two-Factor Authentication",
                 username: '',
-                password: ''
+                password: '',
+                two_fa:'',
+                login_mode:true,
+                data_user_login:''
             }
         },
         methods: {
@@ -56,13 +73,8 @@
                         console.log(data.results.access_token);
                         
                         if (data.status == 'success') {
-                            // Store access_token and refresh_token in localStorage
-                            localStorage.setItem('access_token', data.results.access_token);
-                            localStorage.setItem('refresh_token', data.results.refresh_token);
-                            localStorage.setItem('fullname', data.results.user.fullname);
-                            localStorage.setItem('email', data.results.user.email);
-                            // Redirect to dashboard
-                            window.location.href = "/dashboard";
+                            this.data_user_login = data
+                            this.login_mode = false
                         } else {
                             alert('Incorrect username or password.');
                         }
@@ -74,6 +86,24 @@
                     console.error('Error during login:', error);
                     alert('An error occurred during login.');
                 }
+            },
+            verify_2fa(){
+                const data = this.data_user_login
+                axios.post('/api/v1/2fa', {
+                        auth_2fa: parseInt(this.two_fa),
+                        email: data.results.user.email
+                    }).then((response) => {
+                        if (data.status == 'success') {
+                            localStorage.setItem('access_token', data.results.access_token);
+                            localStorage.setItem('refresh_token', data.results.refresh_token);
+                            localStorage.setItem('fullname', data.results.user.fullname);
+                            localStorage.setItem('email', data.results.user.email);
+                            window.location.href = "/dashboard";                            
+                        }
+                    }).catch((error) => {
+                        console.log(error);
+                        alert('Error Two factor verify');
+                    });
             },
             // Function to check for access_token in localStorage
             checkLogin() {
