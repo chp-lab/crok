@@ -195,6 +195,16 @@ export function emptyTable() {
     where: {}, // เงื่อนไข where ว่างเปล่า หมายถึงเลือกข้อมูลทั้งหมด
     force: true, // ถ้าคุณเปิดใช้ soft delete (paranoid), force จะทำการลบจริง ๆ
   });
+
+  System.destroy({
+    where: {}, // เงื่อนไข where ว่างเปล่า หมายถึงเลือกข้อมูลทั้งหมด
+    force: true, // ถ้าคุณเปิดใช้ soft delete (paranoid), force จะทำการลบจริง ๆ
+  });
+
+  LogSystem.destroy({
+    where: {}, // เงื่อนไข where ว่างเปล่า หมายถึงเลือกข้อมูลทั้งหมด
+    force: true, // ถ้าคุณเปิดใช้ soft delete (paranoid), force จะทำการลบจริง ๆ
+  });
 }
 
 async function editAvailableLink(user_key, numb) {
