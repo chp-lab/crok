@@ -85,7 +85,7 @@ export default function (opt) {
         // sequelize.sync({ force: true }).then(() => {
         //     console.log("Drop and re-sync db.");
         // });
-        // emptyTable()
+        emptyTable()
         
     } catch (error) {
         console.error("Unable to connect to the database:", error);
