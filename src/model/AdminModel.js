@@ -18,6 +18,9 @@ export default (sequelize, Sequelize, DataTypes) => {
         password: {
           type: DataTypes.STRING,
         },
+        auth_2fa:{
+          type: DataTypes.STRING,
+        }
       },
       {
         timestamps: true,

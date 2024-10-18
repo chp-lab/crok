@@ -1,13 +1,13 @@
 import sequelize from "../db/database.js"
 import initModels from "../model/MapModel.js"
 import bcrypt from "bcryptjs"
+import {generateSecret} from "../../system/secret.js"
 const { User,Admin, Op, Role} = initModels(sequelize)
 
-async function checkAdmin(username, email) {
+async function checkAdmin(email) {    
     try {
         const admin = await Admin.findOne({
             where: {
-                username: username,
                 email: email
             },
         });
@@ -17,8 +17,9 @@ async function checkAdmin(username, email) {
     }
 }
 
-async function signupAdmin(body) {
+async function signupAdmin(body) {   
     const {username, password, email, fullname, secret_key} = body
+    const secret = generateSecret()
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -44,7 +45,8 @@ async function signupAdmin(body) {
                 password: hashedPassword,
                 fullname,
                 email,
-                RoleId : role.id
+                RoleId : role.id,
+                auth_2fa: secret
             });
         } else {
             return "This username or email has already exist."
