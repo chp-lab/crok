@@ -134,7 +134,6 @@
       },
       generateQrCode(data) {
         this.title_regis = "Two-Factor Authentication Code";
-        this.value_2fa_key = "2FA Code: " + data;
         const qrCode = new QRCodeStyling({
           width: 250,
           height: 250,
@@ -172,7 +171,9 @@
               const data = response.data;
               console.log(data);
               this.regis_mode = false;
-              this.generateQrCode(data.results);
+              const qt_format = 'otpauth://totp/Server-Crok:'+this.email+'?algorithm=SHA1&digits=6&issuer=Server-Crok&period=30&secret='+data.results
+              this.value_2fa_key = "2FA Code: " + data.results;
+              this.generateQrCode(qt_format);
             })
             .catch((error) => {
               console.log(error);
