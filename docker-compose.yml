@@ -1,16 +1,20 @@
 services:
   crok_server:
     container_name: crok_server
-    # image: ee5610110106/crok:release_25092024
-    image: ee5610110106/crok:mac_test_env
-    # image: ee5610110106/crok:v1_docker_compose
+      #image: ee5610110106/crok:release_04102024
+      #image: ee5610110106/crok:release_17102024_linux
+    image: ee5610110106/crok:linux_18102024
+      #build:
+      #context: ./crok
     environment:
       - DEBUG=localtunnel*
       - SECURE=true
       - PORT=9003
+      - USER_NAME=admin
+      - PASS_WORD=QWer!@34
       - DATABASE_HOST=giantiot.com
       - DATABASE_PORT=45432
-      - DATABASE_NAME=crok_dev
+      - DATABASE_NAME=crok_db
       - DATABASE_USER=admin
       - DATABASE_PASS=qwer!@34
       - ACCESS_TOKEN_SECRET=
@@ -18,6 +22,27 @@ services:
       - JWT_SECRET=y761WwEtZ0iDL1E9LwN6qhZdAlsiecWSv1p3y+OY4ws
       - JWT_REFRESH_SECRET=mfe30riCyGKwfH+sTmN7DDuJZ8nSkjJc/nuZfjfDxqs
     restart: always
-    network_mode: "default"
-    ports:
-      - "9003:9003"
+    network_mode: "host"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+      #ports:
+      #- "9003:${PORT}"
+  crok-psotgresql:
+      container_name: crok-psotgresql
+      image: timescale/timescaledb:latest-pg14
+      restart: always
+      networks:
+        - crok-network
+      ports:
+        - '45432:5432'
+      environment:
+        - TZ:"Asia/Bangkok"
+        - POSTGRES_USER=admin
+        - POSTGRES_PASSWORD=qwer!@34
+        - POSTGRES_DB=crok_db
+      volumes:
+        - ./data/timescaledb:/var/lib/postgresql/data
+networks:
+    crok-network:
