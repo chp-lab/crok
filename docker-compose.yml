@@ -7,8 +7,17 @@ services:
     environment:
       - DEBUG=localtunnel*
       - SECURE=true
-      - PORT=${PORT}
+      - PORT=9003
+      - DATABASE_HOST=giantiot.com
+      - DATABASE_PORT=45432
+      - DATABASE_NAME=crok_dev
+      - DATABASE_USER=admin
+      - DATABASE_PASS=qwer!@34
+      - ACCESS_TOKEN_SECRET=
+      - REFRESH_TOKEN_SECRET=
+      - JWT_SECRET=y761WwEtZ0iDL1E9LwN6qhZdAlsiecWSv1p3y+OY4ws
+      - JWT_REFRESH_SECRET=mfe30riCyGKwfH+sTmN7DDuJZ8nSkjJc/nuZfjfDxqs
     restart: always
     network_mode: "default"
     ports:
-      - "9003:${PORT}"
+      - "9003:9003"

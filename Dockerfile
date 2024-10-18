@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -10,5 +10,5 @@ RUN yarn install --production && yarn cache clean
 COPY . /app
 
 ENV NODE_ENV production
-# ENTRYPOINT ["node", "-r", "esm", "./bin/server"]
-ENTRYPOINT ["./start_server.sh"]
+ENTRYPOINT ["node", "-r", "esm", "./bin/server", "--port", "9003", "--secure", "true"]
+# ENTRYPOINT ["./start_server.sh"]
