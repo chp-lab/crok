@@ -176,8 +176,8 @@
               this.generateQrCode(qt_format);
             })
             .catch((error) => {
-              console.log(error);
-              alert("Error register");
+              console.log(error.response.data);
+              alert(error.response.data.message);
             });
         } catch (error) {
           console.error("Error during login:", error);
