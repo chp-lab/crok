@@ -20,7 +20,9 @@ import {
   checkKey,
   createUser,
   editAvailableLink,
-  findMemUser,updateMemUser
+  findMemUser,
+  updateMemUser,
+  updateLimitMem
 } from "./src/controllers/UserController";
 
 import os from "os";
@@ -221,6 +223,24 @@ class ApiManagement {
       }
     })
 
+    this.router.put(this.api_v1 + "/update/max-memory", authMiddlewareAdmin, async (ctx, next) => {
+      let userKey = ctx.request.body.userKey
+      let limit_mem = ctx.request.body.limit_mem
+      try {
+        const find_mem = await updateLimitMem(userKey, limit_mem);
+
+        if(!find_mem) {
+          new ResponseManager(ctx).error("Invalid userkey", 404);
+          return;
+        }
+
+        new ResponseManager(ctx).success(null,"update limit memmory success.");
+      } catch (err) {
+        this.debug(err.message + "update limit memory fail");
+        new ResponseManager(ctx).error("update limit memory fail", 500);
+      }
+    })
+
     this.router.put(this.api_v1 + "/get/memmory", async (ctx, next) => {
       let userKey = ctx.request.body.userKey
       let usage_mem = ctx.request.body.usage_mem
@@ -367,7 +387,7 @@ class ApiManagement {
     // api admin
     this.router.post(this.api_v1 + "/signin", async (ctx, next) => {
       const args = ctx.request.body || {};
-      this.debug(args);
+      // this.debug(args);
       const { username, password } = args;
       try {
         const user_con = await getTokenAdmin(username, password);

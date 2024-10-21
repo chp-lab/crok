@@ -286,6 +286,38 @@ async function updateMemUser(user_key, usage_mem) {
   }
 }
 
+async function updateLimitMem(user_key, limitGB) {
+  try {
+    const find_mem = await User.findOne({
+      where : {
+        userKey : user_key
+      }
+    });
+    
+    if(!find_mem) {
+      return 
+    }
+
+    let limitB
+
+    if(typeof limitGB == "number") {
+      limitB = limitGB * (1024 * 1024 * 1024)
+    } else {
+      limitB = null
+    }
+
+    await UserPackage.update({ limit_mem : limitB },{
+      where : {
+        UserId : find_mem.id
+      }
+    })
+
+    return find_mem.toJSON()
+  } catch (error) {
+    console.log("updateLimitMem : ",error.message);
+  }
+}
+
 module.exports = {
   getUserLink,
   createUser,
@@ -293,5 +325,7 @@ module.exports = {
   checkKey,
   addUserLink,
   editAvailableLink,
-  findMemUser,updateMemUser
+  findMemUser,
+  updateMemUser,
+  updateLimitMem
 };
