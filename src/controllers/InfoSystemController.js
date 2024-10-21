@@ -28,7 +28,8 @@ async function updateInfo(body) {
           available: available.toFixed(2)
       };
   }
-
+  // console.log(body);
+  
   try {
       const findlink = await Linkuser.findOne({
           include: [
@@ -39,7 +40,7 @@ async function updateInfo(body) {
               }
           ],
           where: {
-              subdomain: body.subdomain
+              tcp_port: body.tcp_port
           }
       });
 
