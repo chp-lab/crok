@@ -5,7 +5,7 @@ if [ $# -eq 0 ]; then
         echo "example: " $0 " 1.0"
         exit 1
 else
-    echo "At password prompt enter: dckr_pat_uAsv62pML__AhK_OXBqwwkLUwJU"
+    echo "At password prompt enter: docker hub  you are received"
     docker login -u ee5610110106
     DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t ee5610110106/crok:$1 .
     docker push ee5610110106/crok:$1
