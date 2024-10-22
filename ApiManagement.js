@@ -42,6 +42,21 @@ class ApiManagement {
   // api authentication
   authentication() {
     this.router.post(this.api_v1 + "/auth/login", async (ctx, next) => {
+
+      if(typeof ctx.request.body.email !== 'string' || ctx.request.body.email == "") {
+        return new ResponseManager(ctx).error(
+          "email must be string.",
+          400
+        );
+      }
+
+      if(typeof ctx.request.body.name !== 'string' || ctx.request.body.name == "") {
+        return new ResponseManager(ctx).error(
+          "name must be string.",
+          400
+        );
+      }
+
       try {
         const result = await getToken(ctx.request.body);
         if (!result) {
