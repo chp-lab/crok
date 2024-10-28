@@ -20,7 +20,9 @@ import {
   checkKey,
   createUser,
   editAvailableLink,
-  findMemUser,updateMemUser
+  findMemUser,
+  updateMemUser,
+  updateLimitMem
 } from "./src/controllers/UserController";
 
 import os from "os";
@@ -40,6 +42,21 @@ class ApiManagement {
   // api authentication
   authentication() {
     this.router.post(this.api_v1 + "/auth/login", async (ctx, next) => {
+
+      if(typeof ctx.request.body.email !== 'string' || ctx.request.body.email == "") {
+        return new ResponseManager(ctx).error(
+          "email must be string.",
+          400
+        );
+      }
+
+      if(typeof ctx.request.body.name !== 'string' || ctx.request.body.name == "") {
+        return new ResponseManager(ctx).error(
+          "name must be string.",
+          400
+        );
+      }
+
       try {
         const result = await getToken(ctx.request.body);
         if (!result) {
@@ -221,6 +238,24 @@ class ApiManagement {
       }
     })
 
+    this.router.put(this.api_v1 + "/update/max-memory", authMiddlewareAdmin, async (ctx, next) => {
+      let userKey = ctx.request.body.userKey
+      let limit_mem = ctx.request.body.limit_mem
+      try {
+        const find_mem = await updateLimitMem(userKey, limit_mem);
+
+        if(!find_mem) {
+          new ResponseManager(ctx).error("Invalid userkey", 404);
+          return;
+        }
+
+        new ResponseManager(ctx).success(null,"update limit memmory success.");
+      } catch (err) {
+        this.debug(err.message + "update limit memory fail");
+        new ResponseManager(ctx).error("update limit memory fail", 500);
+      }
+    })
+
     this.router.put(this.api_v1 + "/get/memmory", async (ctx, next) => {
       let userKey = ctx.request.body.userKey
       let usage_mem = ctx.request.body.usage_mem
@@ -257,7 +292,9 @@ class ApiManagement {
               name: element.name,
               userKey: element.userKey,
               subdomain: e.subdomain,
+              local_port:e.local_port,
               tcp_port: e.tcp_port,
+              ssh_port: e.ssh_port,
               url: e.url,
               email: element.email,
               createdAt: e.createdAt,
@@ -367,7 +404,7 @@ class ApiManagement {
     // api admin
     this.router.post(this.api_v1 + "/signin", async (ctx, next) => {
       const args = ctx.request.body || {};
-      this.debug(args);
+      // this.debug(args);
       const { username, password } = args;
       try {
         const user_con = await getTokenAdmin(username, password);

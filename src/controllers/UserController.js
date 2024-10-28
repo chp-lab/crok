@@ -77,17 +77,6 @@ async function addUserLink(args, user_id) {
     if (!linkuser) {
       console.log("create Linkuser fail");
     }
-
-    // await UserPackage.update({
-    //   package : "default",
-    //   limit_mem : 1024*1024*1024,
-    //   usage_mem : 0
-    // },{
-    //   where : {
-    //     UserId: user_id,
-    //   }
-    // })
-
   } catch (error) {}
 }
 
@@ -146,46 +135,45 @@ async function checkKey(args, mode) {
 
 export async function deleteLinkUser(args) {
   // console.log(">>> ",args)
-  const findlink = await Linkuser.findOne({
-    include : [
-      {
-        model : System,
-        required : true,
-        duplicating : false
+  try {
+    const findlink = await Linkuser.findOne({
+      include : [
+        {
+          model : System,
+          required : true,
+          duplicating : false
+        }
+      ],
+      where : {
+        subdomain : args
       }
-    ],
-    where : {
-      // [Op.and] : [{subdomain : body.subdomain},{tcp_port : body.port}]
-      subdomain : args
+    });
+  
+    if (!findlink) {
+      return
     }
-  });
-
-  if (!findlink) {
-    return
+  
+    await System.destroy({
+      where : {
+        LinkId : findlink.system.LinkId
+      }
+    });
+  
+    await LogSystem.destroy({
+      where : {
+        LinkId : findlink.system.LinkId
+      }
+    });
+  
+    const deleteData = await Linkuser.destroy({
+      where: {
+        subdomain: args,
+      },
+    });
+  } catch (error) {
+    console.log("error : ",error.message);
+    
   }
-
-  await System.destroy({
-    where : {
-      LinkId : findlink.system.LinkId
-    }
-  });
-
-  await LogSystem.destroy({
-    where : {
-      LinkId : findlink.system.LinkId
-    }
-  });
-
-  const deleteData = await Linkuser.destroy({
-    where: {
-      subdomain: args,
-    },
-  });
-  // console.log(deleteData);
-
-  // if (!deleteData) {
-  //     console.log('delete Linkuser failed');
-  // }
 }
 
 export function emptyTable() {
@@ -286,6 +274,38 @@ async function updateMemUser(user_key, usage_mem) {
   }
 }
 
+async function updateLimitMem(user_key, limitGB) {
+  try {
+    const find_mem = await User.findOne({
+      where : {
+        userKey : user_key
+      }
+    });
+    
+    if(!find_mem) {
+      return 
+    }
+
+    let limitB
+
+    if(typeof limitGB == "number") {
+      limitB = limitGB * (1024 * 1024 * 1024)
+    } else {
+      limitB = null
+    }
+
+    await UserPackage.update({ limit_mem : limitB },{
+      where : {
+        UserId : find_mem.id
+      }
+    })
+
+    return find_mem.toJSON()
+  } catch (error) {
+    console.log("updateLimitMem : ",error.message);
+  }
+}
+
 module.exports = {
   getUserLink,
   createUser,
@@ -293,5 +313,7 @@ module.exports = {
   checkKey,
   addUserLink,
   editAvailableLink,
-  findMemUser,updateMemUser
+  findMemUser,
+  updateMemUser,
+  updateLimitMem
 };

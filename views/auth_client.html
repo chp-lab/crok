@@ -89,7 +89,8 @@
                 <th scope="col">email</th>
                 <th scope="col">auth token</th>
                 <!-- <th scope="col">now limit</th> -->
-                <th scope="col">edit limit</th>
+                <th scope="col">link number</th>
+                <th scope="col">package limit (GB)</th>
               </tr>
             </thead>
             <tbody>
@@ -120,6 +121,23 @@
                       type="button"
                       class="btn btn-sm btn-warning"
                       @click="editLimit(user.userKey, user.user_package.link_available)"
+                    >
+                      edit
+                    </button>
+                  </div>
+                </td>
+                <td style="width: 15%">
+                  <div class="input-group">
+                    <input
+                      type="number"
+                      min="1"
+                      class="form-control"
+                      v-model="user.user_package.limitGB"
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-warning"
+                      @click="editMaxMem(user.userKey, user.user_package.limitGB)"
                     >
                       edit
                     </button>
@@ -160,6 +178,16 @@
           })
           .then((response) => {
             this.data_client = response.data;
+            // console.log(this.data_client);
+            response.data.forEach((element,i) => {
+              if(element.user_package.limit_mem != null) {
+                this.data_client[i].user_package.limitGB = element.user_package.limit_mem / (1024 * 1024 * 1024)
+              } else {
+                this.data_client[i].user_package.limitGB = null
+              }
+            });
+            
+            console.log(this.data_client);
           })
           .catch((error) => {
             console.log(error);
@@ -193,6 +221,30 @@
           .put("api/v1/edit/link_available",{
             userKey : userKey,
             number : number
+          }, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          })
+          .then((response) => {
+            alert(response.data.message);
+            this.getClient();
+          })
+          .catch((error) => {
+            console.log(error);
+            alert(error.data.message);
+            if (error.response && error.response.status === 401) {
+              this.logout(); // Logout if unauthorized (token invalid/expired)
+            }
+          });
+        }
+      },
+      editMaxMem(userKey, number) {
+        const accessToken = localStorage.getItem("access_token");
+        if (confirm('Are you sure you want to edit max memory' + userKey + ' ?')) {
+          // alert(userKey + " >> " + number);
+          axios
+          .put("api/v1/update/max-memory",{
+            userKey : userKey,
+            limit_mem : number
           }, {
             headers: { Authorization: `Bearer ${accessToken}` },
           })
