@@ -71,13 +71,15 @@
                 <table class="table table-bordered border-primary">
                     <thead>
                         <tr class="text-center">
-                            <th colspan="8">{{tunnel}}</th>
+                            <th colspan="10">{{tunnel}}</th>
                         </tr>
                         <tr class="text-center">
                             <th scope="col">no</th>
                             <th scope="col"></th>
                             <th scope="col">subdomain</th>
                             <th scope="col">tcp port</th>
+                            <th scope="col">ssh port</th>
+                            <th scope="col">local port</th>
                             <th scope="col">url</th>
                             <th scope="col">user</th>
                             <!-- <th scope="col">connect socket (max 10)</th> -->
@@ -91,6 +93,8 @@
                             <th scope="row"><i class="bi bi-cpu blinking-icon"></i></th>    
                             <td>{{ user.subdomain }}</td>
                             <td>{{ user.tcp_port }}</td>
+                            <td>{{ user.ssh_port }}</td>
+                            <td>{{ user.local_port }}</td>
                             <td><a :href="user.url" target="_blank" rel="noopener noreferrer">{{ user.url }}</a></td>
                             <td>{{ user.email }}</td>
                             <!-- <td>{{ con_sock(user.id) }}</td> -->
