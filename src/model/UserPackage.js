@@ -22,6 +22,9 @@ export default (sequelize, Sequelize, DataTypes) => {
           type: DataTypes.FLOAT,
           defaultValue: 0,
         },
+        ssh_port_config : {
+          type: DataTypes.STRING,
+        }
       },
       {
         timestamps: true,

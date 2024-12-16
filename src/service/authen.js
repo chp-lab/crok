@@ -34,8 +34,11 @@ async function getToken (body) {
                 userKey: randomAsciiString(),
             })
 
+
+
             await UserPackage.create({
-                UserId : user.id
+                UserId : user.id,
+                // ssh_port_config : 
             })
         }
 

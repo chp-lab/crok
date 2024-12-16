@@ -22,6 +22,16 @@ async function checkPortAvailable(port) {
             return true
         }
 
+        const find_port_config = await UserPackage.findOne({
+            where : {
+                ssh_port_config : port
+            }
+        })
+        
+        if(!find_port_config) {
+            return true
+        }
+
         return false
     } catch(error) {
         console.log(error.message);
@@ -29,20 +39,56 @@ async function checkPortAvailable(port) {
 }
 
 // ฟังก์ชันหาและคืนค่าพอร์ตที่ว่าง
-async function findAvailablePort() {
+async function findAvailablePort(userKey,ssh_port) {
     let port;
     let isAvailable = false;
-
-    while (!isAvailable) {
-        port = getRandomPort();
-
-        // ตรวจสอบว่าพอร์ตนี้ไม่ได้ถูกใช้งาน และพอร์ตนั้นว่าง
-        if (await checkPortAvailable(port)) {
-            isAvailable = true;
-        }
+    
+    if(userKey == "" || userKey == null || userKey == undefined) {
+        return null
     }
 
-    return port;
+    const find_port_config = await UserPackage.findOne({
+        include : [{
+            model : User,
+            require : true,
+            where : {
+                userKey : userKey
+            }
+        }]
+    })
+
+    if(ssh_port && ssh_port !== "undefined") {
+        await UserPackage.update({
+            ssh_port_config : ssh_port
+        },
+        {
+            where : { UserId : find_port_config.UserId}
+        })
+
+        return ssh_port
+    }   
+
+    if(!find_port_config.ssh_port_config) {
+        while (!isAvailable) {
+            port = getRandomPort();
+            // ตรวจสอบว่าพอร์ตนี้ไม่ได้ถูกใช้งาน และพอร์ตนั้นว่าง
+            if (await checkPortAvailable(port)) {
+                if(find_port_config.UserId) {
+                    await UserPackage.update({
+                        ssh_port_config : port
+                    },
+                    {
+                        where : { UserId : find_port_config.UserId}
+                    })
+                }
+                isAvailable = true;
+            } 
+        }
+    
+        return port;
+    } else {
+        return find_port_config.ssh_port_config
+    }
 }
 
 module.exports = {
