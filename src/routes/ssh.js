@@ -10,8 +10,11 @@ class Ssh {
 
     sshInfo() {
         this.router.get(this.api_v1 + "/ssh-port", async (ctx, next) => {
+            const user_key = ctx.query.userKey
+            const ssh_port = ctx.query.ssh_port
+            
             try {
-                const result = await ssh_con.findAvailablePort();
+                const result = await ssh_con.findAvailablePort(user_key,ssh_port);
 
                 if (!result) {
                     new ResponseManager(ctx).error("System info not found.", 404);
