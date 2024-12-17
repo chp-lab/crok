@@ -17,21 +17,17 @@ async function checkPortAvailable(port) {
             }
         })
 
-        if(!find_port) {
-            return true
-        }
-
         const find_port_config = await PortConfig.findOne({
             where : {
                 ssh_port : port
             }
         })
         
-        if(!find_port_config) {
-            return true
+        if(!find_port_config && !find_port) {
+            return true //ว่าง
         }
         
-        return false
+        return false //ไม่ว่าง
     } catch(error) {
         console.log(error.message);
     }
@@ -46,18 +42,28 @@ async function findAvailablePort(userKey,ssh_port) {
         return null
     }
 
+    const find_user = await User.findOne({
+        where : {
+            userKey : userKey
+        }
+    })
+
+    if(!find_user) {
+        return null
+    }
+
     const find_port_config = await UserPackage.findOne({
         include : [{
             model : User,
             require : true,
-            where : {
-                userKey : userKey
-            }
         }],
         include : [{
             model : PortConfig,
             require : false,
         }],
+        where : {
+            UserId : find_user.id
+        },
         order: [[{ model: PortConfig }, 'id', 'DESC']],
     })
 
@@ -65,10 +71,15 @@ async function findAvailablePort(userKey,ssh_port) {
         return null
     }
 
+    // console.log(find_port_config.toJSON());
+
     // แนบ ssh_port
     if(ssh_port && ssh_port !== "undefined") {
-        // ssh_port สามาร5ใช้ได้
-        if(!await checkPortAvailable(ssh_port)) {
+        // ssh_port สามารถใช้ได้
+        console.log(await checkPortAvailable(ssh_port));
+        
+        if(await checkPortAvailable(ssh_port)) {
+            console.log("condition : 1");
             await PortConfig.create({
                 ssh_port : ssh_port,
                 UserPackageId : find_port_config.id
@@ -76,11 +87,21 @@ async function findAvailablePort(userKey,ssh_port) {
         } else {
             // ssh_port ไม่สามารถใช้ได้
             if(find_port_config.port_configs.length == 0) {
-                await PortConfig.create({
-                    ssh_port : ssh_port,
-                    UserPackageId : find_port_config.id
-                })
+                console.log("condition : 2");
+                while (!isAvailable) {
+                    port = getRandomPort();
+                    // ตรวจสอบว่าพอร์ตนี้ไม่ได้ถูกใช้งาน และพอร์ตนั้นว่าง
+                    if (await checkPortAvailable(port)) {
+                        await PortConfig.create({
+                            ssh_port : port,
+                            UserPackageId : find_port_config.id
+                        })
+                        ssh_port = port
+                        isAvailable = true;
+                    } 
+                }
             } else {
+                console.log("condition : 3");
                 ssh_port = (parseInt(find_port_config.port_configs[0].ssh_port) + 1).toString()
                 await PortConfig.create({
                     ssh_port : ssh_port,
@@ -91,6 +112,7 @@ async function findAvailablePort(userKey,ssh_port) {
     } else {
         // ไม่แนบ ssh_port
         if(find_port_config.port_configs.length == 0) {
+            console.log("condition : 4");
             while (!isAvailable) {
                 port = getRandomPort();
                 // ตรวจสอบว่าพอร์ตนี้ไม่ได้ถูกใช้งาน และพอร์ตนั้นว่าง
@@ -103,8 +125,8 @@ async function findAvailablePort(userKey,ssh_port) {
                     isAvailable = true;
                 } 
             }
-
         } else {
+            console.log("condition : 5");
             ssh_port = (parseInt(find_port_config.port_configs[0].ssh_port) + 1).toString()
             await PortConfig.create({
                 ssh_port : ssh_port,
@@ -112,7 +134,7 @@ async function findAvailablePort(userKey,ssh_port) {
             })
         }
     }
-
+    console.log("ssh_port_return : ",ssh_port);
     return ssh_port
 }
 
