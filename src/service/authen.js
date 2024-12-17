@@ -175,7 +175,7 @@ function jwtGenerate (user, jwt_secret) {
     return jwt.sign(
         { email: user.email, name: user.name },
         jwt_secret,
-        { expiresIn: "1h" }
+        { expiresIn: "6h" }
     );
 }
 
