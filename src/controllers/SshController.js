@@ -76,7 +76,7 @@ async function findAvailablePort(userKey,ssh_port) {
     // แนบ ssh_port
     if(ssh_port && ssh_port !== "undefined") {
         // ssh_port สามารถใช้ได้
-        console.log(await checkPortAvailable(ssh_port));
+        // console.log(await checkPortAvailable(ssh_port));
         
         if(await checkPortAvailable(ssh_port)) {
             console.log("condition : 1");
