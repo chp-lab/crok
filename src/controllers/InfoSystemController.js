@@ -1,6 +1,6 @@
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
-const { User, System, Linkuser, LogSystem, Op } = initModels(sequelize);
+const { User, System, Linkuser, LogSystem, PortConfig, Op } = initModels(sequelize);
 
 async function updateInfo(body) {
   var addSys;
@@ -191,6 +191,14 @@ async function delInfo(body) {
         subdomain : body.subdomain
       }
     });
+
+    if(findlink.ssh_port) {
+      await PortConfig.destroy({
+        where : {
+          ssh_port : findlink.ssh_port
+        }
+      });
+    }
 
     return "Delete system info success."
   } catch (error) {

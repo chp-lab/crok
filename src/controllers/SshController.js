@@ -1,7 +1,6 @@
-import { log } from "util";
 import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
-const { User, Linkuser, System, LogSystem, UserPackage } = initModels(sequelize);
+const { User, Linkuser, PortConfig, UserPackage } = initModels(sequelize);
 
 // ฟังก์ชันแรนด้อมพอร์ตในช่วง 2000-3000
 function getRandomPort(min = 2000, max = 3000) {
@@ -22,16 +21,16 @@ async function checkPortAvailable(port) {
             return true
         }
 
-        const find_port_config = await UserPackage.findOne({
+        const find_port_config = await PortConfig.findOne({
             where : {
-                ssh_port_config : port
+                ssh_port : port
             }
         })
         
         if(!find_port_config) {
             return true
         }
-
+        
         return false
     } catch(error) {
         console.log(error.message);
@@ -40,9 +39,9 @@ async function checkPortAvailable(port) {
 
 // ฟังก์ชันหาและคืนค่าพอร์ตที่ว่าง
 async function findAvailablePort(userKey,ssh_port) {
-    let port;
-    let isAvailable = false;
-    
+    var isAvailable = false;
+    var port;
+
     if(userKey == "" || userKey == null || userKey == undefined) {
         return null
     }
@@ -54,41 +53,67 @@ async function findAvailablePort(userKey,ssh_port) {
             where : {
                 userKey : userKey
             }
-        }]
+        }],
+        include : [{
+            model : PortConfig,
+            require : false,
+        }],
+        order: [[{ model: PortConfig }, 'id', 'DESC']],
     })
 
-    if(ssh_port && ssh_port !== "undefined") {
-        await UserPackage.update({
-            ssh_port_config : ssh_port
-        },
-        {
-            where : { UserId : find_port_config.UserId}
-        })
-
-        return ssh_port
-    }   
-
-    if(!find_port_config.ssh_port_config) {
-        while (!isAvailable) {
-            port = getRandomPort();
-            // ตรวจสอบว่าพอร์ตนี้ไม่ได้ถูกใช้งาน และพอร์ตนั้นว่าง
-            if (await checkPortAvailable(port)) {
-                if(find_port_config.UserId) {
-                    await UserPackage.update({
-                        ssh_port_config : port
-                    },
-                    {
-                        where : { UserId : find_port_config.UserId}
-                    })
-                }
-                isAvailable = true;
-            } 
-        }
-    
-        return port;
-    } else {
-        return find_port_config.ssh_port_config
+    if(!find_port_config) {
+        return null
     }
+
+    // แนบ ssh_port
+    if(ssh_port && ssh_port !== "undefined") {
+        // ssh_port สามาร5ใช้ได้
+        if(!await checkPortAvailable(ssh_port)) {
+            await PortConfig.create({
+                ssh_port : ssh_port,
+                UserPackageId : find_port_config.id
+            })
+        } else {
+            // ssh_port ไม่สามารถใช้ได้
+            if(find_port_config.port_configs.length == 0) {
+                await PortConfig.create({
+                    ssh_port : ssh_port,
+                    UserPackageId : find_port_config.id
+                })
+            } else {
+                ssh_port = (parseInt(find_port_config.port_configs[0].ssh_port) + 1).toString()
+                await PortConfig.create({
+                    ssh_port : ssh_port,
+                    UserPackageId : find_port_config.id
+                })
+            }
+        }
+    } else {
+        // ไม่แนบ ssh_port
+        if(find_port_config.port_configs.length == 0) {
+            while (!isAvailable) {
+                port = getRandomPort();
+                // ตรวจสอบว่าพอร์ตนี้ไม่ได้ถูกใช้งาน และพอร์ตนั้นว่าง
+                if (await checkPortAvailable(port)) {
+                    await PortConfig.create({
+                        ssh_port : port,
+                        UserPackageId : find_port_config.id
+                    })
+                    ssh_port = port
+                    isAvailable = true;
+                } 
+            }
+
+        } else {
+            ssh_port = (parseInt(find_port_config.port_configs[0].ssh_port) + 1).toString()
+            await PortConfig.create({
+                ssh_port : ssh_port,
+                UserPackageId : find_port_config.id
+            })
+        }
+    }
+
+    return ssh_port
 }
 
 module.exports = {

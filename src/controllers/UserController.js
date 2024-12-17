@@ -2,7 +2,7 @@ import sequelize from "../db/database.js";
 import initModels from "../model/MapModel.js";
 import { randomAsciiString } from "../../generalFunction.js";
 import { user } from "pg/lib/defaults.js";
-const { User, Linkuser, System, LogSystem, UserPackage } = initModels(sequelize);
+const { User, Linkuser, System, LogSystem, UserPackage, PortConfig } = initModels(sequelize);
 
 async function getUserLink() {
   try {
@@ -165,11 +165,19 @@ export async function deleteLinkUser(args) {
       }
     });
   
-    const deleteData = await Linkuser.destroy({
+    await Linkuser.destroy({
       where: {
         subdomain: args,
       },
     });
+
+    if(findlink.ssh_port) {
+      await PortConfig.destroy({
+        where : {
+          ssh_port : findlink.ssh_port
+        }
+      });
+    }
   } catch (error) {
     console.log("error : ",error.message);
     
